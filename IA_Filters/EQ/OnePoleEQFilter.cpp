@@ -90,13 +90,13 @@ namespace IADSP
         }
         
         const auto one = static_cast<Type>(1.0);
-        auto x = pow(base, decibelChange);
+        auto x = std::pow(base, decibelChange);
 
         if(mode == OnePoleEQFilterMode::LowPass) {
-            adjustedFreq = std::min(frequency / x, sampleRate * 0.5);
+            adjustedFreq = std::min(frequency / x, sampleRate * static_cast<Type>(0.5));
         }
         else {
-            adjustedFreq = std::min(frequency * x, sampleRate * 0.5);
+            adjustedFreq = std::min(frequency * x, sampleRate * static_cast<Type>(0.5));
         }
 
         boost = (x * x) - one;
