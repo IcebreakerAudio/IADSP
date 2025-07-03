@@ -48,7 +48,7 @@ public:
         createLowPass(ratio);
     }
 
-    void processChannel (float* inputData, float* outputData, int samplesToProcess, int channel = 0)
+    void processChannel (float* inputData, float* outputData, size_t samplesToProcess, size_t channel = 0)
     {
         const int sampsNeeded = static_cast<int>(std::ceil(double(samplesToProcess) / ratio));
         
@@ -90,14 +90,14 @@ public:
         }
     }
 
-    void processMono (std::vector<float>& inputData, std::vector<float>& outputData, int samplesToProcess)
+    void processMono (std::vector<float>& inputData, std::vector<float>& outputData, size_t samplesToProcess)
     {
         processChannel(inputData.data(), outputData.data(), samplesToProcess);
     }
 
-    void processBuffer (float** inputBuffer, float** outputBuffer, int samplesToProcess, int numChannels)
+    void processBuffer (float** inputBuffer, float** outputBuffer, size_t samplesToProcess, size_t numChannels)
     {
-        for(int c = 0; c < numChannels; ++c) {
+        for(size_t c = 0; c < numChannels; ++c) {
             processChannel(inputBuffer[c], outputBuffer[c], samplesToProcess, c);
         }
     }
