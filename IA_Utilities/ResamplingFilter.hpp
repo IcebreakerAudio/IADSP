@@ -50,7 +50,7 @@ public:
 
     void processChannel (float* inputData, float* outputData, size_t samplesToProcess, size_t channel = 0)
     {
-        const int sampsNeeded = static_cast<int>(std::ceil(double(samplesToProcess) / ratio));
+        const auto sampsNeeded = static_cast<size_t>(std::ceil(double(samplesToProcess) / ratio));
         
         std::memcpy(internalBuffer[channel].data(), inputData, samplesToProcess * sizeof(float));
 
@@ -131,9 +131,9 @@ private:
         coefficients[5] = c1 * (1.0 - std::numbers::sqrt2 * n + nSquared);
     }
 
-    void applyFilter (float* samples, int num, FilterState& fs)
+    void applyFilter (float* samples, size_t num, FilterState& fs)
     {
-        for (int s = 0; s < num; ++s)
+        for (size_t s = 0; s < num; ++s)
         {
             const double in = samples[s];
 
