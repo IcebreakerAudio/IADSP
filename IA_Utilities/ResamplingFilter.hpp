@@ -48,9 +48,9 @@ public:
         createLowPass(ratio);
     }
 
-    void processChannel (float* inputData, float* outputData, int samplesToProcess, int channel = 0)
+    void processChannel (float* inputData, float* outputData, size_t samplesToProcess, size_t channel = 0)
     {
-        const int sampsNeeded = static_cast<int>(std::ceil(double(samplesToProcess) / ratio));
+        const auto sampsNeeded = static_cast<size_t>(std::ceil(double(samplesToProcess) / ratio));
         
         std::memcpy(internalBuffer[channel].data(), inputData, samplesToProcess * sizeof(float));
 
@@ -90,14 +90,14 @@ public:
         }
     }
 
-    void processMono (std::vector<float>& inputData, std::vector<float>& outputData, int samplesToProcess)
+    void processMono (std::vector<float>& inputData, std::vector<float>& outputData, size_t samplesToProcess)
     {
         processChannel(inputData.data(), outputData.data(), samplesToProcess);
     }
 
-    void processBuffer (float** inputBuffer, float** outputBuffer, int samplesToProcess, int numChannels)
+    void processBuffer (float** inputBuffer, float** outputBuffer, size_t samplesToProcess, size_t numChannels)
     {
-        for(int c = 0; c < numChannels; ++c) {
+        for(size_t c = 0; c < numChannels; ++c) {
             processChannel(inputBuffer[c], outputBuffer[c], samplesToProcess, c);
         }
     }
@@ -131,9 +131,9 @@ private:
         coefficients[5] = c1 * (1.0 - std::numbers::sqrt2 * n + nSquared);
     }
 
-    void applyFilter (float* samples, int num, FilterState& fs)
+    void applyFilter (float* samples, size_t num, FilterState& fs)
     {
-        for (int s = 0; s < num; ++s)
+        for (size_t s = 0; s < num; ++s)
         {
             const double in = samples[s];
 
