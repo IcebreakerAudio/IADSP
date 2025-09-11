@@ -1,5 +1,7 @@
 #pragma once
-#include <juce_dsp/juce_dsp.h>
+
+#include <algorithm>
+#include <cmath>
 
 class ADREnvelope
 {
@@ -19,7 +21,7 @@ public:
         KeepValue
     };
 
-    void prepare(const juce::dsp::ProcessSpec& spec);
+    void setSampleRate(const double sampleRateToUse);
 
     void noteOn(float velocity0to1 = 1.0f);
     void noteOff();
@@ -37,9 +39,11 @@ public:
 
 private:
 
+    static constexpr float MINIMUM_VALUE = 1.0e-6f;
+    const float LN_TWO = std::log(2.0f);
+
     float sampleRate = 48000.0f;
     float minimumTime = 1000.0f / sampleRate;
-    float expFactor  = -2.0f * juce::MathConstants<float>::pi * 1000.0f / sampleRate;
 
     float attackMs = 0.1f, decayMs = 500.0f, releaseMs = 100.0f, sensitivity = 0.0f;
     float attackInc = 0.0f, decayFactor = 0.0f, releaseFactor = 0.0f, peakLevel = 1.0f;

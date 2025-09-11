@@ -18,10 +18,12 @@ public:
     {
         glideTime = newTimeInMillseconds;
 
-        if(glideTime <= static_cast<Type>(0.0))
+        if(glideTime <= static_cast<Type>(0.0)) {
             glideFactor = static_cast<Type>(1.0);
-        else
+        }
+        else {
             glideFactor = std::log(2.0) / (glideTime * 0.001 * sampleRate);
+        }
     }
 
     void setValue(Type newValue, bool force = false)
@@ -40,8 +42,9 @@ public:
 
     Type getNextValue()
     {
-        if(!smoothing)
+        if(!smoothing) {
             return targetValue;
+        }
 
         value = ((targetValue - z1) * glideFactor) + z1;
         z1 = value;

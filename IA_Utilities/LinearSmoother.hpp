@@ -4,11 +4,11 @@
 #include <cmath>
 
 template<typename Type>
-class LinearSmooother
+class LinearSmoother
 {
 public:
 
-    LinearSmooother(Type initValue)
+    LinearSmoother(Type initValue)
     {
         setValue(initValue, true);
     }
@@ -42,8 +42,9 @@ public:
 
     Type getNextValue()
     {
-        if(!smoothing)
+        if(!smoothing) {
             return targetValue;
+        }
 
         value += incAmount;
         smoothing = !checkFinished();
