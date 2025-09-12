@@ -3,59 +3,62 @@
 #include <algorithm>
 #include <cmath>
 
-class ADSREnvelope
+namespace IADSP
 {
-public:
-
-    enum class EnvelopePhase
+    class ADSREnvelope
     {
-        Attack,
-        Decay,
-        Sustain,
-        Release,
-        Idle
+    public:
+
+        enum class EnvelopePhase
+        {
+            Attack,
+            Decay,
+            Sustain,
+            Release,
+            Idle
+        };
+
+        enum class AttackMode
+        {
+            SetToZero,
+            KeepValue
+        };
+
+        void setSampleRate(const double sampleRateToUse);
+
+        void noteOn(float velocity0to1 = 1.0f);
+        void noteOff();
+
+        void setAttackMode(AttackMode newMode);
+        void setVelocitySensitivity(float newSensitivity);
+
+        void setAttackTime(float timeInMilliseconds);
+        void setDecayTime(float timeInMilliseconds);
+        void setSustainLevel(float gainLevel);
+        void setReleaseTime(float timeInMilliseconds);
+
+        float getValueAndProgress();
+        float getValue() { return envValue; }
+        EnvelopePhase getPhase() { return envelopePhase; }
+
+    private:
+
+        static constexpr float MINIMUM_VALUE = 1.0e-6f;
+        const float LN_TWO = std::log(2.0f);
+
+        float sampleRate = 48000.0f;
+        float minimumTime = 1000.0f / sampleRate;
+
+        float attackMs = 0.1f, decayMs = 500.0f, releaseMs = 100.0f, sensitivity = 0.0f;
+        float attackInc = 0.0f, decayFactor = 0.0f, releaseFactor = 0.0f, peakLevel = 1.0f;
+        float sustainLevel = 1.0f;
+
+        float envValue = 0.0f;
+
+        void checkEnvFinished();
+        void calculateFactors();
+
+        EnvelopePhase envelopePhase = EnvelopePhase::Idle;
+        AttackMode attackMode = AttackMode::KeepValue;
     };
-
-    enum class AttackMode
-    {
-        SetToZero,
-        KeepValue
-    };
-
-    void setSampleRate(const double sampleRateToUse);
-
-    void noteOn(float velocity0to1 = 1.0f);
-    void noteOff();
-
-    void setAttackMode(AttackMode newMode);
-    void setVelocitySensitivity(float newSensitivity);
-
-    void setAttackTime(float timeInMilliseconds);
-    void setDecayTime(float timeInMilliseconds);
-    void setSustainLevel(float gainLevel);
-    void setReleaseTime(float timeInMilliseconds);
-
-    float getValueAndProgress();
-    float getValue() { return envValue; }
-    EnvelopePhase getPhase() { return envelopePhase; }
-
-private:
-
-    static constexpr float MINIMUM_VALUE = 1.0e-6f;
-    const float LN_TWO = std::log(2.0f);
-
-    float sampleRate = 48000.0f;
-    float minimumTime = 1000.0f / sampleRate;
-
-    float attackMs = 0.1f, decayMs = 500.0f, releaseMs = 100.0f, sensitivity = 0.0f;
-    float attackInc = 0.0f, decayFactor = 0.0f, releaseFactor = 0.0f, peakLevel = 1.0f;
-    float sustainLevel = 1.0f;
-
-    float envValue = 0.0f;
-
-    void checkEnvFinished();
-    void calculateFactors();
-
-    EnvelopePhase envelopePhase = EnvelopePhase::Idle;
-    AttackMode attackMode = AttackMode::KeepValue;
-};
+}
