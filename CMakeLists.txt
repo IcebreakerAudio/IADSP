@@ -23,14 +23,18 @@ set(IADSP_SOURCES
     IA_Filters/SecondOrderFilter.cpp
 
     IA_Utilities/FiFo.hpp
+    IA_Utilities/GlideSmoother.hpp
+    IA_Utilities/LinearSmoother.hpp
     IA_Utilities/ParameterListener.hpp
     IA_Utilities/ResamplingFilter.hpp
 
     IA_Waveshaping/BasicClippers.hpp
+    IA_Waveshaping/ADAAClippers.hpp
 )
 
 add_library(IADSP STATIC ${IADSP_SOURCES})
 
 target_include_directories(IADSP PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<INSTALL_INTERFACE:include>
 )
