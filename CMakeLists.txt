@@ -30,6 +30,11 @@ set(IADSP_SOURCES
 
     IA_Waveshaping/BasicClippers.hpp
     IA_Waveshaping/ADAAClippers.hpp
+    
+    IA_SynthBasics/ADSREnvelope.hpp
+    IA_SynthBasics/ADSREnvelope.cpp
+    IA_SynthBasics/ADREnvelope.hpp
+    IA_SynthBasics/ADREnvelope.cpp
 )
 
 add_library(IADSP STATIC ${IADSP_SOURCES})
