@@ -24,7 +24,7 @@ namespace IADSP
         void setSmoothingTime(Type newTimeInMillseconds)
         {
             glideTime = newTimeInMillseconds;
-            glideTimeSamples = glideTime * static_cast<Type>(0.001) * sampleRate;
+            glideTimeSamples = std::round(glideTime * static_cast<Type>(0.001) * sampleRate);
         }
 
         void setValue(Type newValue, bool force = false)
@@ -71,7 +71,7 @@ namespace IADSP
         bool checkFinished()
         {
             const auto diff = std::abs(value - targetValue);
-            return diff <= std::numeric_limits<Type>::min();
+            return diff < std::abs(incAmount);
         }
 
         Type sampleRate = 48000.0, value = 0.0, glideTime = 0.0, targetValue = 0.0, incAmount = 0.0, glideTimeSamples = 1.0;
