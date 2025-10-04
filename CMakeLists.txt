@@ -27,6 +27,8 @@ set(IADSP_SOURCES
     IA_Utilities/LinearSmoother.hpp
     IA_Utilities/ParameterListener.hpp
     IA_Utilities/ResamplingFilter.hpp
+    IA_Utilities/LoudnessMeter.hpp
+    IA_Utilities/LoudnessMeter.cpp
 
     IA_Waveshaping/BasicClippers.hpp
     IA_Waveshaping/ADAAClippers.hpp
