@@ -107,6 +107,19 @@ namespace IADSP
         a1 = w - one;
     }
 
+    template<typename Type>
+    void OnePoleEQFilter<Type>::snapToZero()
+    {
+        const auto zero = static_cast<Type>(0.0);
+        const auto min  = static_cast<Type>(1.0e-8);
+
+        for(auto& x : y1) {
+            if (! (x < -min || x > min)) {
+                x = zero;
+            }
+        }
+    }
+
     //==============================================================================
     template class OnePoleEQFilter<float>;
     template class OnePoleEQFilter<double>;

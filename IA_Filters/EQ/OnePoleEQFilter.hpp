@@ -43,6 +43,7 @@ namespace IADSP
         Type processSample(Type input, int channel = 0);
 
         void reset();
+        void snapToZero();
 
     private:
 

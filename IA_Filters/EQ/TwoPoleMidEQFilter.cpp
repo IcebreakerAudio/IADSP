@@ -120,6 +120,34 @@ namespace IADSP
         a2 = w2 + 1.0 - wQ;
     }
 
+    template<typename Type>
+    void TwoPoleMidEQFilter<Type>::snapToZero()
+    {
+        const auto zero = static_cast<Type>(0.0);
+        const auto min  = static_cast<Type>(1.0e-8f);
+
+        for(auto& x : z1) {
+            if (! (x < -min || x > min)) {
+                x = zero;
+            }
+        }
+        for(auto& x : z2) {
+            if (! (x < -min || x > min)) {
+                x = zero;
+            }
+        }
+        for(auto& x : y1) {
+            if (! (x < -min || x > min)) {
+                x = zero;
+            }
+        }
+        for(auto& x : y2) {
+            if (! (x < -min || x > min)) {
+                x = zero;
+            }
+        }
+    }
+
     //==============================================================================
     template class TwoPoleMidEQFilter<float>;
     template class TwoPoleMidEQFilter<double>;
