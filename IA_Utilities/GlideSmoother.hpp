@@ -24,7 +24,7 @@ namespace IADSP
                 glideFactor = static_cast<Type>(1.0);
             }
             else {
-                glideFactor = std::log(2.0) / (glideTime * 0.001 * sampleRate);
+                glideFactor = std::log(static_cast<Type>(2.0)) / (glideTime * static_cast<Type>(0.001) * sampleRate);
             }
         }
 
