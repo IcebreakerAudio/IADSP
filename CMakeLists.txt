@@ -37,6 +37,8 @@ set(IADSP_SOURCES
     IA_SynthBasics/ADSREnvelope.cpp
     IA_SynthBasics/ADREnvelope.hpp
     IA_SynthBasics/ADREnvelope.cpp
+    IA_SynthBasics/LFO.hpp
+    IA_SynthBasics/LFO.cpp
 )
 
 add_library(IADSP STATIC ${IADSP_SOURCES})
