@@ -5,7 +5,7 @@
 namespace IADSP
 {
     template<typename Type>
-    LFO<Type>::LFO() : smoother(static_cast<Type>(0.0))
+    LFO<Type>::LFO()
     {
         calculatePhaseIncrement();
     }
@@ -30,12 +30,6 @@ namespace IADSP
     {
         rateHz = std::max(static_cast<Type>(0.01), rateInHz);
         calculatePhaseIncrement();
-    }
-
-    template<typename Type>
-    void LFO<Type>::setDepth(Type depth0to1)
-    {
-        depth = std::max(static_cast<Type>(0.0), std::min(static_cast<Type>(1.0), depth0to1));
     }
 
     template<typename Type>
@@ -68,7 +62,7 @@ namespace IADSP
             phase -= static_cast<Type>(1.0);
         }
             
-        return currentValue * depth;
+        return currentValue;
     }
 
     template<typename Type>

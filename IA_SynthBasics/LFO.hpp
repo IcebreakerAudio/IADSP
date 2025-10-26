@@ -26,23 +26,20 @@ namespace IADSP
         
         void setWaveform(WaveformType waveform);
         void setRate(Type rateInHz);
-        void setDepth(Type depth0to1);
         void setPhaseOffset(Type phaseOffset0to1);
         
         void reset();
         
         Type getNextValue();
-        Type getCurrentValue() const { return currentValue * depth; }
+        Type getCurrentValue() const { return currentValue; }
         
         WaveformType getWaveform() const { return waveformType; }
         Type getRate() const { return rateHz; }
-        Type getDepth() const { return depth; }
 
     private:
         
         Type sampleRate = static_cast<Type>(48000.0);
         Type rateHz = static_cast<Type>(1.0);
-        Type depth = static_cast<Type>(1.0);
         Type phaseOffset = static_cast<Type>(0.0);
         
         Type phase = static_cast<Type>(0.0);
