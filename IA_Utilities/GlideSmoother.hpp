@@ -34,6 +34,7 @@ namespace IADSP
             if(force)
             {
                 value = newValue;
+                z1 = newValue;
                 smoothing = false;
             }
             else
@@ -62,9 +63,9 @@ namespace IADSP
             smoothing = false;
         }
 
-        Type getTargetValue() { return targetValue; }
+        Type getTargetValue() const { return targetValue; }
 
-        Type getCurrentValue() { return value; }
+        Type getCurrentValue() const { return value; }
 
         bool isSmoothing() { return smoothing; }
 
