@@ -1,6 +1,4 @@
 #include "LFO.hpp"
-#include <algorithm>
-#include <numbers>
 
 namespace IADSP
 {
