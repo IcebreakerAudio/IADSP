@@ -42,9 +42,8 @@ namespace IADSP
         frequency = newFrequency;
     }
 
-    void PulseOscillator::setPulseWidth(float newWidth0to1)
+    void PulseOscillator::setPulseWidth(float newWidth)
     {
-        pulseWidth = newWidth0to1 * (MAX_PULSE_WIDTH - MIN_PULSE_WIDTH);
-        pulseWidth += MIN_PULSE_WIDTH;
+        pulseWidth = std::clamp(newWidth, MIN_PULSE_WIDTH, MAX_PULSE_WIDTH);
     }
 }

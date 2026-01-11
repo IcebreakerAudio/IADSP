@@ -18,7 +18,7 @@ namespace IADSP
         void reset();
 
         void setFrequency(float newFrequency);
-        void setPulseWidth(float newWidth0to1);
+        void setPulseWidth(float newWidth);
 
     private:
 
