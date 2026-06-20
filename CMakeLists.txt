@@ -35,6 +35,7 @@ source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${IADSP_SOURCES})
 
 target_include_directories(IADSP PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<INSTALL_INTERFACE:include>
 )
 
 target_compile_options(IADSP PRIVATE

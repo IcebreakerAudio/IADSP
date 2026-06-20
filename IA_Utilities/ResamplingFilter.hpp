@@ -42,13 +42,22 @@ public:
         reset();
     }
 
+    void clear()
+    {
+        for(auto& b : internalBuffer) {
+            b.clear();
+        }
+        internalBuffer.clear();
+        filterStates.clear();
+    }
+
     void setResamplingRatio(double newInToOutRatio)
     {
         ratio = newInToOutRatio;
         createLowPass(ratio);
     }
 
-    void processChannel (float* inputData, float* outputData, size_t samplesToProcess, size_t channel = 0)
+    void processChannel (const float* inputData, float* outputData, size_t samplesToProcess, size_t channel = 0)
     {
         const auto sampsNeeded = static_cast<size_t>(std::ceil(double(samplesToProcess) / ratio));
         
@@ -90,12 +99,12 @@ public:
         }
     }
 
-    void processMono (std::vector<float>& inputData, std::vector<float>& outputData, size_t samplesToProcess)
+    void processMono (const std::vector<float>& inputData, std::vector<float>& outputData, size_t samplesToProcess)
     {
         processChannel(inputData.data(), outputData.data(), samplesToProcess);
     }
 
-    void processBuffer (float** inputBuffer, float** outputBuffer, size_t samplesToProcess, size_t numChannels)
+    void processBuffer (const float* const* inputBuffer, float* const* outputBuffer, size_t samplesToProcess, size_t numChannels)
     {
         for(size_t c = 0; c < numChannels; ++c) {
             processChannel(inputBuffer[c], outputBuffer[c], samplesToProcess, c);
