@@ -1,10 +1,4 @@
-# This is just a very basic CMake list so that the IADSP files can be included in
-# a JUCE project using CMake
-#
-# Sources are discovered via glob instead of a hand-maintained list, so newly
-# added .cpp/.hpp files under the directories below are picked up automatically
-# on the next CMake configure (CONFIGURE_DEPENDS re-triggers that configure
-# when files are added/removed).
+# This is just a very basic CMake list so that the IADSP files can be included in a project using CMake
 
 cmake_minimum_required(VERSION 3.25)
 project(IADSP CXX)
