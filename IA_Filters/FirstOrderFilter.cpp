@@ -61,8 +61,11 @@ namespace IADSP
         if(filterType == FirstOrderFilterMode::Lowpass) {
             return x;
         }
-        else {
+        else if(filterType == FirstOrderFilterMode::Highpass) {
             return in - x;
+        }
+        else {
+            return (x + x) - in;
         }
     }
 

@@ -1,6 +1,11 @@
 /*
-This is a nice and simple first order (1-pole) filter, with highpass and lowpass modes.
+This is a nice and simple first order (1-pole) filter, with lowpass, highpass, and allpass modes.
 You can also use this filter as a crossover filter.
+
+Allpass mode reuses the same lowpass state and coefficient rather than deriving its own: since
+lowpass + highpass reconstructs the input exactly, allpass = 2 * lowpass - input gives a unity-gain,
+phase-shifting-only response for free. Useful standalone (e.g. phaser stages) or for phase-aligning a
+dry signal against a crossover-split wet signal.
 */
 
 #pragma once
@@ -15,7 +20,8 @@ namespace IADSP
     enum struct FirstOrderFilterMode
     {
         Lowpass,
-        Highpass
+        Highpass,
+        Allpass
     };
 
     template<typename Type>
