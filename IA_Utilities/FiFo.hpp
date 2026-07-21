@@ -129,7 +129,7 @@ public:
     }
 #endif
 
-    void addToFifo(const AudioBuffer& buffer, int numChannelsToRead = -1) noexcept
+    void addToFifo(const AudioBuffer<SampleType>& buffer, int numChannelsToRead = -1) noexcept
     {
         const auto numSamples = static_cast<int>(buffer.numFrames());
         if(numChannelsToRead <= 0) {
@@ -149,7 +149,7 @@ public:
                     for(int c = 1; c < numChannelsToRead; ++c) {
                         value += buffer.channel(static_cast<uint32_t>(c))[i];
                     }
-                    value = value / static_cast<float>(numChannelsToRead);
+                    value = value / static_cast<SampleType>(numChannelsToRead);
                 }
                 internalBuffer[i + region.startIndex1] = static_cast<SampleType>(value);
             }
@@ -164,7 +164,7 @@ public:
                     for(int c = 1; c < numChannelsToRead; ++c) {
                         value += buffer.channel(static_cast<uint32_t>(c))[i + region.blockSize1];
                     }
-                    value = value / static_cast<float>(numChannelsToRead);
+                    value = value / static_cast<SampleType>(numChannelsToRead);
                 }
                 internalBuffer[i + region.startIndex2] = static_cast<SampleType>(value);
             }

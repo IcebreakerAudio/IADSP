@@ -6,11 +6,12 @@
 
 // A `const AudioBuffer` only prevents reseating the view itself (its pointer/counts);
 // it does not stop writes through the channel data it exposes.
+template<typename Type>
 class AudioBuffer
 {
 public:
     AudioBuffer() noexcept = default;
-    AudioBuffer(float **sourceData, uint32_t numChannels, uint32_t numFrames) noexcept
+    AudioBuffer(Type **sourceData, uint32_t numChannels, uint32_t numFrames) noexcept
         : rawDataPointer(sourceData), channels(numChannels), frames(numFrames)
     {
     }
@@ -18,20 +19,21 @@ public:
     uint32_t numChannels() const noexcept { return channels; }
     uint32_t numFrames() const noexcept { return frames; }
 
-    std::span<float> channel(uint32_t index) const noexcept { return {rawDataPointer[index], frames}; }
-    float** data() const noexcept { return rawDataPointer; }
+    std::span<Type> channel(uint32_t index) const noexcept { return {rawDataPointer[index], frames}; }
+    Type** data() const noexcept { return rawDataPointer; }
 
     void copyFrom(const AudioBuffer &source) noexcept;
     void clear() noexcept;
 
 private:
 
-    float** rawDataPointer = nullptr;
+    Type** rawDataPointer = nullptr;
     uint32_t channels = 0;
     uint32_t frames = 0;
 };
 
-inline void AudioBuffer::copyFrom(const AudioBuffer &source) noexcept
+template<typename Type>
+inline void AudioBuffer<Type>::copyFrom(const AudioBuffer &source) noexcept
 {
     const uint32_t n = std::min(channels, source.numChannels());
     for (uint32_t ch = 0; ch < n; ++ch)
@@ -40,10 +42,11 @@ inline void AudioBuffer::copyFrom(const AudioBuffer &source) noexcept
     }
 }
 
-inline void AudioBuffer::clear() noexcept
+template<typename Type>
+inline void AudioBuffer<Type>::clear() noexcept
 {
     for (uint32_t ch = 0; ch < channels; ++ch)
     {
-        std::ranges::fill(channel(ch), 0.0f);
+        std::ranges::fill(channel(ch), static_cast<Type>(0.0));
     }
 }
