@@ -48,7 +48,7 @@ namespace IADSP
             reset();
         }
 
-        float processSample(float sample, int channel = 0)
+        Type processSample(Type sample, int channel = 0)
         {
             if (channel >= channels)
             {
@@ -114,7 +114,7 @@ namespace IADSP
             reset();
         }
 
-        float processSample(float sample, int channel = 0)
+        Type processSample(Type sample, int channel = 0)
         {
             if (channel >= channels)
             {
