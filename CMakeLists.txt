@@ -6,6 +6,8 @@ project(IADSP CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+option(IADSP_BUILD_JUCE_MODULE "Build the IADSP_JUCE integration module" OFF)
+
 set(IADSP_SOURCE_DIRS
     IA_Filters
     IA_SynthBasics
@@ -36,3 +38,7 @@ target_compile_options(IADSP PRIVATE
     $<$<CXX_COMPILER_ID:MSVC>:/W4>
     $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra>
 )
+
+if(IADSP_BUILD_JUCE_MODULE)
+    add_subdirectory(IA_JUCE)
+endif()

@@ -4,10 +4,11 @@ addToFifo()/zeroFifo(); a single, possibly different, thread (the "consumer") ma
 getSizeToRead()/readFromFifo(). setSize()/reset() must not be called concurrently with either side -
 they're meant for one-time setup, e.g. during prepare().
 
-JUCE-free by default. If <juce_audio_basics/juce_audio_basics.h> is reachable on the include path, an
-addToFifo(const juce::AudioBuffer<SampleType>&, int) overload is compiled in automatically. There is
-also an always-available addToFifo(const AudioBuffer&, int) overload for this library's own
-AudioBuffer class (IA_Utilities/AudioBuffer.hpp).
+JUCE-free by default. An addToFifo(const juce::AudioBuffer<SampleType>&, int) overload is compiled in
+when the IADSP_JUCE CMake module is enabled (IADSP_BUILD_JUCE_MODULE=ON), which defines the
+IADSP_JUCE_AVAILABLE macro - see IA_JUCE/CMakeLists.txt. There is also an always-available
+addToFifo(const AudioBuffer&, int) overload for this library's own AudioBuffer class
+(IA_Utilities/AudioBuffer.hpp).
 
 One slot of `totalSize` is always kept unwritten so a fully-wrapped write position can be told apart
 from an empty buffer: a Fifo of size N holds at most N - 1 items, and setSize(1) has zero usable
@@ -35,8 +36,7 @@ Fifo is neither copyable nor movable (std::atomic members), unlike the JUCE-back
 
 #include "AudioBuffer.hpp"
 
-#if __has_include(<juce_audio_basics/juce_audio_basics.h>)
-    #define IADSP_FIFO_JUCE_AVAILABLE 1
+#ifdef IADSP_JUCE_AVAILABLE
     #include <juce_audio_basics/juce_audio_basics.h>
 #endif
 
@@ -83,7 +83,7 @@ public:
         return getFreeSpace() == 0;
     }
 
-#ifdef IADSP_FIFO_JUCE_AVAILABLE
+#ifdef IADSP_JUCE_AVAILABLE
     void addToFifo(const juce::AudioBuffer<SampleType>& buffer, int numChannelsToRead = -1) noexcept
     {
         const auto numSamples = buffer.getNumSamples();
@@ -314,5 +314,3 @@ private:
     int totalSize = 1;
     std::vector<SampleType> internalBuffer;
 };
-
-#undef IADSP_FIFO_JUCE_AVAILABLE
