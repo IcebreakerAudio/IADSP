@@ -18,15 +18,7 @@ namespace IADSP
         template<typename Type>
         Type hardClipToThreshold(Type input, Type threshold)
         {
-            if(input < -threshold) {
-                return -threshold;
-            }
-            else if(input > threshold) {
-                return threshold;
-            }
-            else {
-                return input;
-            }
+            return std::clamp(input, -threshold, threshold);
         }
 
         template<typename Type>
