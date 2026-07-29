@@ -3,11 +3,17 @@ This combines a HalfbandFIRFilter (for the first 2x stage) and a cascade of Butt
 instances (for any further 2x stages) into a multi-stage oversampler, intended as a JUCE-free
 replacement for juce::dsp::Oversampling.
 
-Usage per block:
+Usage per block (raw-pointer style):
     auto numUpsampled = oversampler.upsample(input, numSamples);
-    auto** buffer = oversampler.getInternalBuffer();
+    auto** buffer = oversampler.getInternalBufferData();
     // ... manipulate `buffer` in place, numUpsampled samples per channel ...
     oversampler.downsample(output, numSamples);
+
+Or, using AudioBuffer<Type> instead of raw pointers:
+    auto numUpsampled = oversampler.upsample(inputBuffer);
+    auto internalBuffer = oversampler.getInternalBuffer();
+    // ... manipulate internalBuffer in place, numUpsampled frames per channel ...
+    oversampler.downsample(outputBuffer);
 
 setNumStages() sets the number of 2x stages (oversampling factor = 2^numStages). Buffers and per-channel
 filter state are all sized ahead of time in prepare() - none of the per-block methods above allocate.
@@ -26,8 +32,10 @@ classes above.
 
 #include <vector>
 #include <cstddef>
+#include "AudioBuffer.hpp"
 #include "../IA_Filters/HalfbandFIRFilter.hpp"
 #include "../IA_Filters/ButterworthHalfbandFilter.hpp"
+#include <span>
 
 namespace IADSP
 {
@@ -37,27 +45,47 @@ namespace IADSP
     public:
         Oversampler();
 
-        void reset();
+        void reset() noexcept;
         void setNumStages(int newNumStages);
         void prepare(int numChannels, int maximumBlockSize);
 
         // numSamples low-rate samples in -> returns numSamples * getOversamplingFactor(), the number of
         // samples now available in the internal buffer
-        size_t upsample(Type** input, size_t numSamples);
+        size_t upsample(Type** input, size_t numSamples) noexcept;
+
+        // upsamples an audio buffer and returns the numer of oversampled samples in the internal buffer
+        size_t upsample(const AudioBuffer<Type>& buffer) noexcept;
 
         // valid between upsample() and downsample(); getOversamplingFactor() * numSamples samples per
         // channel, where numSamples is whatever was last passed to upsample()
-        Type** getInternalBuffer();
+        Type** getInternalBufferData() noexcept;
+
+        // valid between upsample() and downsample(); an AudioBuffer<Type> view over the same data
+        // getInternalBufferData() exposes as a raw Type** (see above)
+        AudioBuffer<Type> getInternalBuffer() noexcept;
+
+        // returns a span covering the upsampled audio produced for the given sample and channel; valid
+        // between upsample() and downsample(), like getInternalBufferData()/getInternalBuffer() above.
+        // if the oversampling factor is two, this will return 2 elements, if it is 4 then 4 elements etc.
+        std::span<Type> getUpsampledForPosition(size_t channel, size_t originalSamplePos) noexcept;
 
         // numSamples is the ORIGINAL (pre-oversampling) sample count - the same value passed to upsample()
-        void downsample(Type** output, size_t numSamples);
+        void downsample(Type** output, size_t numSamples) noexcept;
+
+        // downsamples into an audio buffer
+        void downsample(AudioBuffer<Type>& buffer) noexcept;
 
         // latency is approx 1.375ms for a 48kHz original sample rate
-        size_t getLatency() const;
-        int getOversamplingFactor() const { return 1 << numStages; }
-        void snapToZero();
+        size_t getLatency() const noexcept;
+        int getOversamplingFactor() const noexcept { return 1 << numStages; }
+        void snapToZero() noexcept;
 
     private:
+        // Picks bufferAPointers/bufferBPointers according to manipulatedBufferIsA - shared by
+        // getInternalBufferData(), getInternalBuffer(), and getUpsampledForPosition() so the buffer
+        // ping-pong selection logic only lives in one place.
+        Type** manipulatedBufferPointers() noexcept;
+
         HalfbandFIRFilter<Type> firUp, firDown;
         std::vector<ButterworthHalfbandFilter<Type>> iirUpStages, iirDownStages;
 
@@ -68,5 +96,7 @@ namespace IADSP
         int numChannels = 0;
         int maximumBlockSize = 0;
         bool manipulatedBufferIsA = true;
+
+        size_t currentLength = 0;
     };
 }

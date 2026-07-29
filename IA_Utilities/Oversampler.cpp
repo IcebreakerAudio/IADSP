@@ -68,7 +68,7 @@ namespace IADSP
     }
 
     template<typename Type>
-    void Oversampler<Type>::reset()
+    void Oversampler<Type>::reset() noexcept
     {
         firUp.reset();
         firDown.reset();
@@ -89,7 +89,7 @@ namespace IADSP
     }
 
     template<typename Type>
-    void Oversampler<Type>::snapToZero()
+    void Oversampler<Type>::snapToZero() noexcept
     {
         for(auto& stage : iirUpStages) {
             stage.snapToZero();
@@ -100,14 +100,15 @@ namespace IADSP
     }
 
     template<typename Type>
-    size_t Oversampler<Type>::getLatency() const
+    size_t Oversampler<Type>::getLatency() const noexcept
     {
         return numStages == 0 ? size_t{0} : size_t{66};
     }
 
     template<typename Type>
-    size_t Oversampler<Type>::upsample(Type** input, size_t numSamples)
+    size_t Oversampler<Type>::upsample(Type** input, size_t numSamples) noexcept
     {
+        currentLength = numSamples;
         if(numStages == 0)
         {
             for(int c = 0; c < numChannels; ++c) {
@@ -119,10 +120,10 @@ namespace IADSP
 
         auto* currentBuffers = &bufferA;
         auto* otherBuffers = &bufferB;
-        size_t currentLength = numSamples;
 
         for(int c = 0; c < numChannels; ++c) {
-            firUp.interpolate(input[c], (*currentBuffers)[c].data(), currentLength, c);
+            firUp.interpolate(std::span<const Type>(input[c], currentLength),
+                               std::span<Type>((*currentBuffers)[c]).first(currentLength * 2), c);
         }
         currentLength *= 2;
 
@@ -132,7 +133,8 @@ namespace IADSP
             auto& filter = iirUpStages[stage - 2];
 
             for(int c = 0; c < numChannels; ++c) {
-                filter.interpolate((*otherBuffers)[c].data(), (*currentBuffers)[c].data(), currentLength, c);
+                filter.interpolate(std::span<const Type>((*otherBuffers)[c]).first(currentLength),
+                                    std::span<Type>((*currentBuffers)[c]).first(currentLength * 2), c);
             }
             currentLength *= 2;
         }
@@ -142,13 +144,41 @@ namespace IADSP
     }
 
     template<typename Type>
-    Type** Oversampler<Type>::getInternalBuffer()
+    size_t Oversampler<Type>::upsample(const AudioBuffer<Type>& buffer) noexcept
+    {
+        return upsample(buffer.data(), buffer.numFrames());
+    }
+
+    template<typename Type>
+    Type** Oversampler<Type>::manipulatedBufferPointers() noexcept
     {
         return manipulatedBufferIsA ? bufferAPointers.data() : bufferBPointers.data();
     }
 
     template<typename Type>
-    void Oversampler<Type>::downsample(Type** output, size_t numSamples)
+    Type** Oversampler<Type>::getInternalBufferData() noexcept
+    {
+        return manipulatedBufferPointers();
+    }
+
+    template<typename Type>
+    AudioBuffer<Type> Oversampler<Type>::getInternalBuffer() noexcept
+    {
+        return AudioBuffer<Type>(manipulatedBufferPointers(), numChannels, currentLength);
+    }
+
+    template<typename Type>
+    std::span<Type> Oversampler<Type>::getUpsampledForPosition(size_t channel, size_t originalSamplePos) noexcept
+    {
+        // return span covering the number of oversampled samples that represent this sample in this channel
+        // if the oversampling factor is two, this will return 2 elements, if it is 4 then 4 elements etc.
+        const auto factor = static_cast<size_t>(getOversamplingFactor());
+        return std::span<Type>(manipulatedBufferPointers()[channel], currentLength)
+                   .subspan(originalSamplePos * factor, factor);
+    }
+
+    template<typename Type>
+    void Oversampler<Type>::downsample(Type** output, size_t numSamples) noexcept
     {
         if(numStages == 0)
         {
@@ -161,23 +191,31 @@ namespace IADSP
 
         auto* currentBuffers = manipulatedBufferIsA ? &bufferA : &bufferB;
         auto* otherBuffers = manipulatedBufferIsA ? &bufferB : &bufferA;
-        size_t currentLength = numSamples << numStages;
+        size_t length = numSamples << numStages;
 
         for(int stage = numStages; stage >= 2; --stage)
         {
             std::swap(currentBuffers, otherBuffers);
-            const auto outputLength = currentLength / 2;
+            const auto outputLength = length / 2;
             auto& filter = iirDownStages[stage - 2];
 
             for(int c = 0; c < numChannels; ++c) {
-                filter.decimate((*otherBuffers)[c].data(), (*currentBuffers)[c].data(), outputLength, c);
+                filter.decimate(std::span<const Type>((*otherBuffers)[c]).first(length),
+                                 std::span<Type>((*currentBuffers)[c]).first(outputLength), c);
             }
-            currentLength = outputLength;
+            length = outputLength;
         }
 
         for(int c = 0; c < numChannels; ++c) {
-            firDown.decimate((*currentBuffers)[c].data(), output[c], numSamples, c);
+            firDown.decimate(std::span<const Type>((*currentBuffers)[c]).first(numSamples * 2),
+                              std::span<Type>(output[c], numSamples), c);
         }
+    }
+
+    template<typename Type>
+    void Oversampler<Type>::downsample(AudioBuffer<Type>& buffer) noexcept
+    {
+        downsample(buffer.data(), buffer.numFrames());
     }
 
     //==============================================================================

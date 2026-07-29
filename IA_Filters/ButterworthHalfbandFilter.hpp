@@ -16,6 +16,7 @@ even, since each section is one second-order biquad; odd values are rounded up t
 #pragma once
 
 #include <vector>
+#include <span>
 #include "SecondOrderFilter.hpp"
 
 namespace IADSP
@@ -28,14 +29,16 @@ namespace IADSP
 
         void setOrder(int newOrder);
         void setNumChannels(int numChannels);
-        void reset();
-        void snapToZero();
+        void reset() noexcept;
+        void snapToZero() noexcept;
 
         // make sure the output buffer is at least 2x the size of the input buffer
-        void interpolate(const Type* input, Type* output, size_t numInputSamples, int channel = 0);
+        void interpolate(std::span<const Type> input, std::span<Type> output, int channel = 0) noexcept;
+        void interpolate(const Type* input, Type* output, size_t numInputSamples, int channel = 0) noexcept;
 
         // make sure the input buffer is at least 2x the size of the output buffer
-        void decimate(const Type* input, Type* output, size_t numOutputSamples, int channel = 0);
+        void decimate(std::span<const Type> input, std::span<Type> output, int channel = 0) noexcept;
+        void decimate(const Type* input, Type* output, size_t numOutputSamples, int channel = 0) noexcept;
 
     private:
         int order = 0;

@@ -82,8 +82,22 @@ public:
     std::span<Type> channel(uint32_t index) const noexcept { return {rawDataPointer[index], frames}; }
     Type** data() const noexcept { return rawDataPointer; }
 
-    void copyFrom(const AudioBuffer &source) noexcept;
-    void clear() noexcept;
+    void copyFrom(const AudioBuffer &source) noexcept
+    {
+        const uint32_t n = std::min(channels, source.numChannels());
+        for (uint32_t ch = 0; ch < n; ++ch)
+        {
+            std::ranges::copy(source.channel(ch), channel(ch).begin());
+        }
+    }
+
+    void clear() noexcept
+    {
+        for (uint32_t ch = 0; ch < channels; ++ch)
+        {
+            std::ranges::fill(channel(ch), static_cast<Type>(0.0));
+        }
+    }
 
 private:
 
@@ -96,22 +110,3 @@ private:
     std::array<Type*, MaxJuceBlockChannels> juceBlockChannelStorage{};
 #endif
 };
-
-template<typename Type>
-inline void AudioBuffer<Type>::copyFrom(const AudioBuffer &source) noexcept
-{
-    const uint32_t n = std::min(channels, source.numChannels());
-    for (uint32_t ch = 0; ch < n; ++ch)
-    {
-        std::ranges::copy(source.channel(ch), channel(ch).begin());
-    }
-}
-
-template<typename Type>
-inline void AudioBuffer<Type>::clear() noexcept
-{
-    for (uint32_t ch = 0; ch < channels; ++ch)
-    {
-        std::ranges::fill(channel(ch), static_cast<Type>(0.0));
-    }
-}

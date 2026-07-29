@@ -116,11 +116,11 @@ namespace IADSP
     }
 
     template<typename Type>
-    void HalfbandFIRFilter<Type>::interpolate(const Type* input, Type* output, size_t numInputSamples, int channel)
+    void HalfbandFIRFilter<Type>::interpolate(std::span<const Type> input, std::span<Type> output, int channel) noexcept
     {
         auto& history = upHistory[channel];
 
-        for(size_t i = 0; i < numInputSamples; ++i)
+        for(size_t i = 0; i < input.size(); ++i)
         {
             history.push(input[i]);
 
@@ -135,11 +135,17 @@ namespace IADSP
     }
 
     template<typename Type>
-    void HalfbandFIRFilter<Type>::decimate(const Type* input, Type* output, size_t numOutputSamples, int channel)
+    void HalfbandFIRFilter<Type>::interpolate(const Type* input, Type* output, size_t numInputSamples, int channel) noexcept
+    {
+        interpolate(std::span<const Type>(input, numInputSamples), std::span<Type>(output, 2 * numInputSamples), channel);
+    }
+
+    template<typename Type>
+    void HalfbandFIRFilter<Type>::decimate(std::span<const Type> input, std::span<Type> output, int channel) noexcept
     {
         auto& history = downHistory[channel];
 
-        for(size_t i = 0; i < numOutputSamples; ++i)
+        for(size_t i = 0; i < output.size(); ++i)
         {
             history.push(input[2 * i]);
             history.push(input[2 * i + 1]);
@@ -150,6 +156,12 @@ namespace IADSP
             }
             output[i] = static_cast<Type>(acc);
         }
+    }
+
+    template<typename Type>
+    void HalfbandFIRFilter<Type>::decimate(const Type* input, Type* output, size_t numOutputSamples, int channel) noexcept
+    {
+        decimate(std::span<const Type>(input, 2 * numOutputSamples), std::span<Type>(output, numOutputSamples), channel);
     }
 
     //==============================================================================

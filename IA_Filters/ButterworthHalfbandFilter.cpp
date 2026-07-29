@@ -53,7 +53,7 @@ namespace IADSP
     }
 
     template<typename Type>
-    void ButterworthHalfbandFilter<Type>::reset()
+    void ButterworthHalfbandFilter<Type>::reset() noexcept
     {
         for(auto& section : sections) {
             section.reset();
@@ -61,7 +61,7 @@ namespace IADSP
     }
 
     template<typename Type>
-    void ButterworthHalfbandFilter<Type>::snapToZero()
+    void ButterworthHalfbandFilter<Type>::snapToZero() noexcept
     {
         for(auto& section : sections) {
             section.snapToZero();
@@ -69,12 +69,12 @@ namespace IADSP
     }
 
     template<typename Type>
-    void ButterworthHalfbandFilter<Type>::interpolate(const Type* input, Type* output, size_t numInputSamples, int channel)
+    void ButterworthHalfbandFilter<Type>::interpolate(std::span<const Type> input, std::span<Type> output, int channel) noexcept
     {
         const auto two = static_cast<Type>(2.0);
         const auto zero = static_cast<Type>(0.0);
 
-        for(size_t i = 0; i < numInputSamples; ++i)
+        for(size_t i = 0; i < input.size(); ++i)
         {
             output[2 * i] = two * input[i];
             output[2 * i + 1] = zero;
@@ -82,16 +82,22 @@ namespace IADSP
 
         for(auto& section : sections)
         {
-            for(size_t n = 0; n < 2 * numInputSamples; ++n) {
+            for(size_t n = 0; n < output.size(); ++n) {
                 output[n] = section.processSample(output[n], channel);
             }
         }
     }
 
     template<typename Type>
-    void ButterworthHalfbandFilter<Type>::decimate(const Type* input, Type* output, size_t numOutputSamples, int channel)
+    void ButterworthHalfbandFilter<Type>::interpolate(const Type* input, Type* output, size_t numInputSamples, int channel) noexcept
     {
-        for(size_t i = 0; i < numOutputSamples; ++i)
+        interpolate(std::span<const Type>(input, numInputSamples), std::span<Type>(output, 2 * numInputSamples), channel);
+    }
+
+    template<typename Type>
+    void ButterworthHalfbandFilter<Type>::decimate(std::span<const Type> input, std::span<Type> output, int channel) noexcept
+    {
+        for(size_t i = 0; i < output.size(); ++i)
         {
             auto value = input[2 * i];
             for(auto& section : sections) {
@@ -105,6 +111,12 @@ namespace IADSP
 
             output[i] = value;
         }
+    }
+
+    template<typename Type>
+    void ButterworthHalfbandFilter<Type>::decimate(const Type* input, Type* output, size_t numOutputSamples, int channel) noexcept
+    {
+        decimate(std::span<const Type>(input, 2 * numOutputSamples), std::span<Type>(output, numOutputSamples), channel);
     }
 
     //==============================================================================

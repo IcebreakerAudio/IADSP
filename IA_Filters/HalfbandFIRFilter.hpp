@@ -18,6 +18,7 @@ running at, since it is specified purely in terms of fractions of Nyquist.
 #include <vector>
 #include <array>
 #include <cstddef>
+#include <span>
 
 namespace IADSP
 {
@@ -31,10 +32,12 @@ namespace IADSP
         void reset();
 
         // numInputSamples low-rate samples in -> 2 * numInputSamples high-rate samples out
-        void interpolate(const Type* input, Type* output, size_t numInputSamples, int channel = 0);
+        void interpolate(std::span<const Type> input, std::span<Type> output, int channel = 0) noexcept;
+        void interpolate(const Type* input, Type* output, size_t numInputSamples, int channel = 0) noexcept;
 
         // 2 * numOutputSamples high-rate samples in -> numOutputSamples low-rate samples out
-        void decimate(const Type* input, Type* output, size_t numOutputSamples, int channel = 0);
+        void decimate(std::span<const Type> input, std::span<Type> output, int channel = 0) noexcept;
+        void decimate(const Type* input, Type* output, size_t numOutputSamples, int channel = 0) noexcept;
 
     private:
         static constexpr int numTaps = 133;
