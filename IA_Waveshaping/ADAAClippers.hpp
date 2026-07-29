@@ -66,7 +66,7 @@ namespace IADSP
             }
             else {
                 x += z;
-                x = std::clamp(-ONE, ONE, x * static_cast<Type>(0.5));
+                x = std::clamp(x * static_cast<Type>(0.5), -ONE, ONE);
             }
             f1[channel] = y;
             z1[channel] = sample;
