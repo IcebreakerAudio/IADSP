@@ -18,7 +18,7 @@ namespace IADSP
     template<typename Type>
     void LadderFilter<Type>::reset()
     {
-        auto zero = static_cast<Type>(0.0);
+        const auto zero = static_cast<Type>(0.0);
 
         for(auto& stage : stages) {
             stage.reset();
@@ -26,7 +26,10 @@ namespace IADSP
         feedbackHighpass.reset();
         std::fill(feedback.begin(), feedback.end(), zero);
 
-        std::fill(lp.begin(), lp.end(), zero);
+        std::fill(lp1.begin(), lp1.end(), zero);
+        std::fill(lp2.begin(), lp2.end(), zero);
+        std::fill(lp3.begin(), lp3.end(), zero);
+        std::fill(lp4.begin(), lp4.end(), zero);
         std::fill(hp.begin(), hp.end(), zero);
         std::fill(bp.begin(), bp.end(), zero);
     }
@@ -40,7 +43,10 @@ namespace IADSP
         feedbackHighpass.setNumChannels(numChannels);
         feedback.resize(numChannels);
 
-        lp.resize(numChannels);
+        lp1.resize(numChannels);
+        lp2.resize(numChannels);
+        lp3.resize(numChannels);
+        lp4.resize(numChannels);
         hp.resize(numChannels);
         bp.resize(numChannels);
 
@@ -84,14 +90,23 @@ namespace IADSP
     template<typename Type>
     void LadderFilter<Type>::setResonance(double newResonance)
     {
-        resonance = std::clamp(newResonance, 0.0, 1.2);
+        resonance = std::clamp(newResonance, -0.124, 1.2);
         k = static_cast<Type>(resonance * 4.0);
     }
 
     template<typename Type>
-    void LadderFilter<Type>::setSaturationAmount(double newAmount)
+    void LadderFilter<Type>::setFeedbackDriveThreshold(Type newThreshold)
     {
-        saturationAmount = static_cast<Type>(std::clamp(newAmount, 0.0, 1.0));
+        driveThreshold = newThreshold;
+        invDriveThreshold = 1.0f / driveThreshold;
+    }
+
+    template<typename Type>
+    void LadderFilter<Type>::setOverdriveAmount(Type newAmount)
+    {
+        inGain = newAmount * newAmount * static_cast<Type>(8.0) + static_cast<Type>(1.5);
+        midGain = newAmount * newAmount * static_cast<Type>(1.5) + static_cast<Type>(1.0);
+        outGain = static_cast<Type>(1.5) - sqrt(newAmount);
     }
 
     template<typename Type>
@@ -102,48 +117,59 @@ namespace IADSP
     }
 
     template<typename Type>
-    void LadderFilter<Type>::setFeedbackHighpassAmount(double newAmount)
-    {
-        feedbackHighpassAmount = std::clamp(newAmount, 0.0, 1.0);
-    }
-
-    template<typename Type>
     Type LadderFilter<Type>::processSample(Type in, int channel)
     {
-        const auto fb = feedback[channel];
-        const auto shapedFeedback = fb + saturationAmount * (std::tanh(fb) - fb);
+        auto n = std::max(1.0, cutoff / 1250.0);
+        n = (0.33 / n) + 0.67;
+        auto kN = static_cast<Type>(k * n);
 
-        const auto highpassedFeedback = feedbackHighpass.processSample(shapedFeedback, channel);
-        const auto blendedFeedback = shapedFeedback
-            + static_cast<Type>(feedbackHighpassAmount) * (highpassedFeedback - shapedFeedback);
+        auto x = saturateInput(in * inGain);
+        auto fbk = std::tanh(feedback[channel] * kN * invDriveThreshold) * driveThreshold;
+        x -= fbk;
 
-        const auto u = in - (k * blendedFeedback);
-
-        const auto s1 = stages[0].processSample(u, channel);
+        const auto s1 = stages[0].processSample(x, channel);
         const auto s2 = stages[1].processSample(s1, channel);
         const auto s3 = stages[2].processSample(s2, channel);
         const auto s4 = stages[3].processSample(s3, channel);
 
-        feedback[channel] = s4;
+        feedback[channel] = feedbackHighpass.processSample(s4, channel);
 
-        lp[channel] = s4;
-        bp[channel] = s2 - s4;
-        hp[channel] = in - s4;
+        lp1[channel] = s1;
+        lp2[channel] = s2;
+        lp3[channel] = s3;
+        lp4[channel] = s4;
+        bp[channel]  = s2 - s4;
+        hp[channel]  = in - s4;
 
+        auto y = lp4[channel];
         switch (filterType)
         {
+        case LadderFilterMode::Lowpass1Pole:
+            y = lp1[channel];
+            break;
+
+        case LadderFilterMode::Lowpass2Pole:
+            y = lp2[channel];
+            break;
+
+        case LadderFilterMode::Lowpass3Pole:
+            y = lp3[channel];
+            break;
+
         case LadderFilterMode::Highpass:
-            return hp[channel];
+            y = hp[channel];
             break;
 
         case LadderFilterMode::Bandpass:
-            return bp[channel];
+            y = bp[channel];
             break;
 
         default:
-            return lp[channel];
+            y = lp4[channel];
             break;
         }
+
+        return saturateOutput(y);
     }
 
     template<typename Type>
