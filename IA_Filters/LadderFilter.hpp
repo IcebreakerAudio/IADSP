@@ -1,5 +1,10 @@
 /*
-
+A ladder style filter using 4 cascaded one-pole filters with a negative feedback path.
+Best used at higher sample rates, so I'd suggest oversampling if your sample rate is below 88.2kHz.
+The internal feedback path has an adjustable highpass filter so you can fix the bass reduction that happens at higher resonances.
+The resonance is also calibrated to reduce at higher cutoff frequencies, otherwise this can sound very harsh(especially when modulated).
+The overdrive (parameter range 0 to 1) will saturate both the input and the output.
+The feedback path has it's own saturation in order to avoid exploding when self-oscillating. This is always on, but the threshold can be set.
 */
 
 #pragma once
@@ -41,16 +46,9 @@ namespace IADSP
         void setMode(LadderFilterMode newType) { filterType = newType; }
 
         void setCutoffFrequency(double frequency);
-
-        // Resonance amount (0 to 1).
         void setResonance(double newResonance);
-
-        // Internal saturation amount (0 to 1)
         void setOverdriveAmount(Type newAmount);
-
-        // Cutoff frequency of the highpass filter applied to the resonance feedback path (see setFeedbackHighpassAmount()).
         void setFeedbackHighpassFrequency(double frequency);
-
         void setFeedbackDriveThreshold(Type newThreshold);
 
         Type processSample(Type in, int channel = 0);
