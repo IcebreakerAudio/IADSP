@@ -79,9 +79,10 @@ namespace IADSP
         double sampleRate = 48000.0, cutoff = 500.0, maxFrequency = 24000.0;
         double resonance = 0.0;
         double feedbackHighpassFrequency = 20.0;
-        Type k = 0.0;
+        Type k = static_cast<Type>(0.0);
 
-        Type driveThreshold = 3.0, invDriveThreshold = 0.333, inGain = 1.0, midGain = 1.0, outGain = 1.0;
+        Type driveThreshold = static_cast<Type>(3.0), invDriveThreshold = static_cast<Type>(0.333),
+             inGain = static_cast<Type>(1.0), midGain = static_cast<Type>(1.0), outGain = static_cast<Type>(1.0);
 
         std::vector<Type> feedback { 1 };
         std::vector<Type> lp1 { 1 }, lp2 { 1 }, lp3 { 1 }, lp4 { 1 }, hp { 1 }, bp { 1 };
