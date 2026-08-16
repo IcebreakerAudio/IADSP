@@ -24,6 +24,7 @@ namespace IADSP
             stage.reset();
         }
         feedbackHighpass.reset();
+        feedbackClipper.reset();
         std::fill(feedback.begin(), feedback.end(), zero);
 
         std::fill(lp1.begin(), lp1.end(), zero);
@@ -41,6 +42,7 @@ namespace IADSP
             stage.setNumChannels(numChannels);
         }
         feedbackHighpass.setNumChannels(numChannels);
+        feedbackClipper.setNumChannels(numChannels);
         feedback.resize(numChannels);
 
         lp1.resize(numChannels);
@@ -57,7 +59,7 @@ namespace IADSP
     void LadderFilter<Type>::setSampleRate(double newSampleRate)
     {
         sampleRate = newSampleRate;
-        maxFrequency = sampleRate * 0.5;
+        maxFrequency = std::min(20000.0, sampleRate * 0.5);
         if(cutoff > maxFrequency) {
             cutoff = maxFrequency;
         }
@@ -119,12 +121,13 @@ namespace IADSP
     template<typename Type>
     Type LadderFilter<Type>::processSample(Type in, int channel)
     {
-        auto n = std::max(1.0, cutoff / 1250.0);
-        n = (0.33 / n) + 0.67;
+        auto n = cutoff / 20000.0;
+        n = 1.0 - (n * n * 0.5);
         auto kN = static_cast<Type>(k * n);
 
         auto x = saturateInput(in * inGain);
-        auto fbk = std::tanh(feedback[channel] * kN * invDriveThreshold) * driveThreshold;
+        auto fbk = feedbackClipper.processSample(feedback[channel] * kN * invDriveThreshold, channel) * driveThreshold;
+        fbk = feedbackHighpass.processSample(fbk, channel);
         x -= fbk;
 
         const auto s1 = stages[0].processSample(x, channel);
@@ -132,7 +135,7 @@ namespace IADSP
         const auto s3 = stages[2].processSample(s2, channel);
         const auto s4 = stages[3].processSample(s3, channel);
 
-        feedback[channel] = feedbackHighpass.processSample(s4, channel);
+        feedback[channel] = s4;
 
         lp1[channel] = s1;
         lp2[channel] = s2;
