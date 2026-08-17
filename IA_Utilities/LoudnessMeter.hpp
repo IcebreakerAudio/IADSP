@@ -6,6 +6,16 @@
 #include "../IA_Filters/FirstOrderFilter.hpp"
 #include "../IA_Filters/EQ/OnePoleEQFilter.hpp"
 
+/*
+
+Reference:
+Momentary = 0.4s
+Short-term = 3s
+
+Refresh rate of at least 10Hz
+
+*/
+
 namespace IADSP
 {
     template<typename Type>
@@ -41,7 +51,7 @@ namespace IADSP
         OnePoleEQFilter<Type> inputShelfFilter { OnePoleEQFilterMode::HighPass };
         void applyWeighting(int numSamplesToProcess);
 
-        bool pauseOnSilence = true, resetToZero = true, useUnfilledAccumulators = false;
+        bool pauseOnSilence = false, resetToZero = true, useUnfilledAccumulators = true;
         static constexpr Type SILENCE_THRESHOLD = static_cast<Type>(2.51e-10);
         static constexpr int MAX_ACCUMULATORS = 50;
         static constexpr Type ZERO = static_cast<Type>(0.0);
