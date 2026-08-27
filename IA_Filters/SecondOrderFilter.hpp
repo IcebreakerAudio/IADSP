@@ -48,7 +48,7 @@ namespace IADSP
         bool updateFlag = false;
         void updateCoefficients();
 
-        double sampleRate = 48000.0, invSampleRate = 1.0 / 48000.0, cutoff = 500.0, maxFrequency = 24000.0, resonance = 0.0;
+        double sampleRate = 48000.0, invSampleRate = 1.0 / 48000.0, cutoff = 500.0, maxFrequency = 23520.0, resonance = 0.0;
         Type a0 = 0.0, p = 0.0, a = 0.0, d = 0.0;
         std::vector<Type> fbk1 { 1 }, fbk2 { 1 }, lp { 1 }, hp { 1 }, bp { 1 };
         SecondOrderFilterMode filterType = SecondOrderFilterMode::Lowpass;

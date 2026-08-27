@@ -59,7 +59,7 @@ namespace IADSP
     void LadderFilter<Type>::setSampleRate(double newSampleRate)
     {
         sampleRate = newSampleRate;
-        maxFrequency = std::min(20000.0, sampleRate * 0.5);
+        maxFrequency = std::min(20000.0, sampleRate * 0.49);
         if(cutoff > maxFrequency) {
             cutoff = maxFrequency;
         }

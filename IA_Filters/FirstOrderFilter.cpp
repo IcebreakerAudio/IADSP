@@ -36,7 +36,7 @@ namespace IADSP
     {
         sampleRate = newSampleRate;
         invSampleRate = static_cast<Type>(1.0 / sampleRate);
-        maxFrequency = sampleRate * 0.5;
+        maxFrequency = sampleRate * 0.49;
         if(cutoff > maxFrequency) {
             cutoff = maxFrequency;
         }
