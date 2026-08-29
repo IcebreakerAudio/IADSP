@@ -12,6 +12,7 @@ dry signal against a crossover-split wet signal.
 
 #include <vector>
 #include <cmath>
+#include <complex>
 #include <numbers>
 #include <algorithm>
 
@@ -39,6 +40,8 @@ namespace IADSP
 
         Type processSample(Type in, int channel = 0);
         void processCrossover(Type in, Type& lowpassOutput, Type& highpassOutput, int channel = 0);
+
+        Type getMagnitudeDb(Type frequencyHz) const noexcept;
 
         void snapToZero();
 

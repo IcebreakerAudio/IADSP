@@ -81,6 +81,35 @@ namespace IADSP
     }
 
     template<typename Type>
+    Type FirstOrderFilter<Type>::getMagnitudeDb(Type frequencyHz) const noexcept
+    {
+        const auto one = static_cast<Type>(1.0);
+        const auto freqHz = std::max(frequencyHz, static_cast<Type>(1.0e-6));
+        const auto omega = static_cast<Type>(2.0) * std::numbers::pi_v<Type> * freqHz * invSampleRate;
+
+        const std::complex<Type> zInv = std::polar(one, -omega);
+        const std::complex<Type> xOverIn = g * (one + zInv) / (one - (g + g - one) * zInv);
+
+        std::complex<Type> h;
+        switch(filterType)
+        {
+        case FirstOrderFilterMode::Highpass:
+            h = one - xOverIn;
+            break;
+
+        case FirstOrderFilterMode::Allpass:
+            h = (xOverIn + xOverIn) - one;
+            break;
+
+        default:
+            h = xOverIn;
+            break;
+        }
+
+        return static_cast<Type>(20.0) * std::log10(std::abs(h));
+    }
+
+    template<typename Type>
     void FirstOrderFilter<Type>::updateCoefficients()
     {
         auto w = std::tan(cutoff * invSampleRate * std::numbers::pi_v<Type>);
