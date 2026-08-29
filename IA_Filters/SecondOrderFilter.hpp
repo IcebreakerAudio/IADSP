@@ -7,6 +7,7 @@ You can also use this filter as a multi-mode filter - once you process a sample,
 
 #include <vector>
 #include <cmath>
+#include <complex>
 #include <numbers>
 #include <algorithm>
 
@@ -40,6 +41,8 @@ namespace IADSP
         Type getLowpass(int channel = 0)  { return lp[channel]; }
         Type getHighpass(int channel = 0) { return hp[channel]; }
         Type getBandpass(int channel = 0) { return bp[channel]; }
+
+        Type getMagnitudeDb(Type frequencyHz) const noexcept;
 
         void snapToZero();
 

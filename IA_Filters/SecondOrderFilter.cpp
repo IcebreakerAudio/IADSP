@@ -121,6 +121,45 @@ namespace IADSP
     }
 
     template<typename Type>
+    Type SecondOrderFilter<Type>::getMagnitudeDb(Type frequencyHz) const noexcept
+    {
+        const auto one = static_cast<Type>(1.0);
+
+        auto wa = std::tan(std::numbers::pi * cutoff * invSampleRate);
+        const auto aCoef = static_cast<Type>(wa);
+        auto pCoef = static_cast<Type>(1.0 - resonance);
+        pCoef = pCoef + pCoef;
+        const auto dCoef = pCoef + aCoef;
+        const auto a0Coef = one / (one + (pCoef * aCoef) + (aCoef * aCoef));
+
+        const auto freqHz = std::max(static_cast<double>(frequencyHz), 1.0e-6);
+        const auto omega = static_cast<Type>(2.0 * std::numbers::pi * freqHz * invSampleRate);
+        const std::complex<Type> zInv = std::polar(one, -omega);
+        const std::complex<Type> g = (one + zInv) / (one - zInv);
+        const std::complex<Type> z1OverHp = zInv * aCoef * (one + g);
+        const std::complex<Type> z2OverHp = aCoef * g * z1OverHp;
+        const std::complex<Type> hHp = a0Coef / (one + a0Coef * dCoef * z1OverHp + a0Coef * z2OverHp);
+
+        std::complex<Type> h;
+        switch(filterType)
+        {
+        case SecondOrderFilterMode::Highpass:
+            h = hHp;
+            break;
+
+        case SecondOrderFilterMode::Bandpass:
+            h = aCoef * g * hHp;
+            break;
+
+        default:
+            h = (aCoef * g) * (aCoef * g) * hHp;
+            break;
+        }
+
+        return static_cast<Type>(20.0) * std::log10(std::abs(h));
+    }
+
+    template<typename Type>
     void SecondOrderFilter<Type>::snapToZero()
     {
         const auto zero = static_cast<Type>(0.0);

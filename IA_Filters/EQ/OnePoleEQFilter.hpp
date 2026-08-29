@@ -15,6 +15,7 @@ Example:
 #pragma once
 
 #include <cmath>
+#include <complex>
 #include <numbers>
 #include <vector>
 
@@ -41,6 +42,8 @@ namespace IADSP
         void setGainDB(Type newGain);
 
         Type processSample(Type input, int channel = 0);
+
+        Type getMagnitudeDb(Type frequencyHz) const noexcept;
 
         void reset();
         void snapToZero();

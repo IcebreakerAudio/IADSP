@@ -83,6 +83,33 @@ namespace IADSP
     }
 
     template<typename Type>
+    Type OnePoleEQFilter<Type>::getMagnitudeDb(Type frequencyHz) const noexcept
+    {
+        if(!prepared) {
+            return static_cast<Type>(0.0);
+        }
+
+        const auto one = static_cast<Type>(1.0);
+        const auto freqHz = std::max(frequencyHz, static_cast<Type>(1.0e-6));
+        const auto omega = static_cast<Type>(2.0) * std::numbers::pi_v<Type> * freqHz * iFs;
+
+        const std::complex<Type> zInv = std::polar(one, -omega);
+        const std::complex<Type> uOverIn = invA0 / (one + invA0 * a1 * zInv);
+        const std::complex<Type> yOverIn = zInv * uOverIn;
+
+        std::complex<Type> hRaw;
+        if(mode == OnePoleEQFilterMode::LowPass) {
+            hRaw = w * (uOverIn + yOverIn);
+        }
+        else {
+            hRaw = uOverIn - yOverIn;
+        }
+
+        const std::complex<Type> stage = one + boost * hRaw;
+        return static_cast<Type>(20.0) * std::log10(std::abs(stage));
+    }
+
+    template<typename Type>
     void OnePoleEQFilter<Type>::update()
     {
         if(!prepared) {
