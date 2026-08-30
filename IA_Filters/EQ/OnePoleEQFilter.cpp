@@ -117,18 +117,17 @@ namespace IADSP
         }
         
         const auto one = static_cast<Type>(1.0);
-        auto x = std::pow(base, decibelChange);
+        const auto x = std::pow(base, decibelChange);
+        const auto nominalOmega = std::tan(frequency * std::numbers::pi_v<Type> * iFs);
 
         if(mode == OnePoleEQFilterMode::LowPass) {
-            adjustedFreq = std::min(frequency / x, sampleRate * static_cast<Type>(0.5));
+            w = nominalOmega / x;
         }
         else {
-            adjustedFreq = std::min(frequency * x, sampleRate * static_cast<Type>(0.5));
+            w = nominalOmega * x;
         }
 
         boost = (x * x) - one;
-
-        w = std::tan(adjustedFreq * std::numbers::pi_v<Type> * iFs);
 
         invA0 = one / (one + w);
         a1 = w - one;

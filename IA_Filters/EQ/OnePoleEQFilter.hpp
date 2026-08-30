@@ -56,7 +56,7 @@ namespace IADSP
         Type sampleRate = 1.0, iFs = 1.0;
 
         Type frequency = 500.0, decibelChange = 0.0;
-        Type adjustedFreq = 0.0, boost = 0.0, w = 0.0;
+        Type boost = 0.0, w = 0.0;
         Type invA0 = 0.0, a1 = 0.0;
 
         std::vector<Type> y1 { 1 };
