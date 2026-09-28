@@ -115,7 +115,10 @@ namespace IADSP
     template<typename Type>
     size_t Oversampler<Type>::getLatency() const noexcept
     {
-        return (numStages == 0 || mode == OversamplerMode::LowLatency) ? size_t{0} : size_t{66};
+        if(numStages == 0) {
+            return size_t{0};
+        }
+        return mode == OversamplerMode::LowLatency ? size_t{3} : size_t{66};
     }
 
     template<typename Type>

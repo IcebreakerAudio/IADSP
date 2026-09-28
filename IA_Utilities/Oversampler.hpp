@@ -4,10 +4,11 @@ instances (for any further 2x stages) into a multi-stage oversampler.
 
 The first stage's filter is chosen once, in the constructor, via OversamplerMode:
     HighQuality (default) - linear-phase HalfbandFIRFilter, 66 samples of latency.
-    LowLatency            - PolyphaseIIRHalfbandFilter (elliptic allpass IIR), no reported latency and much
-                            cheaper, with similar passband flatness and stopband rejection, but not
-                            linear-phase: roughly 4 original-rate samples of real (frequency-dependent)
-                            round-trip group delay at low frequencies.
+    LowLatency            - PolyphaseIIRHalfbandFilter (elliptic allpass IIR), 3 samples of reported latency
+                            and much cheaper, with similar passband flatness and stopband rejection, but not
+                            linear-phase: its real round-trip group delay is ~3.18 original-rate samples,
+                            flat up to a few kHz and rising towards the band edge (~3.4 at 5kHz, ~4 at 10kHz
+                            for a 48kHz original rate).
 
 Usage per block (raw-pointer style):
     auto numUpsampled = oversampler.upsample(input, numSamples);
@@ -83,7 +84,8 @@ namespace IADSP
         // downsamples into an audio buffer
         void downsample(AudioBuffer<Type>& buffer) noexcept;
 
-        // HighQuality: latency is approx 1.375ms for a 48kHz original sample rate; LowLatency: always 0
+        // HighQuality: 66 samples (approx 1.375ms for a 48kHz original sample rate); LowLatency: 3 samples,
+        // the first stage's low-frequency group delay rounded to a whole sample. 0 with no stages.
         size_t getLatency() const noexcept;
         int getOversamplingFactor() const noexcept { return 1 << numStages; }
         void snapToZero() noexcept;
