@@ -5,7 +5,7 @@
 namespace IADSP
 {
     // Stage 2 gets order 8, tapering by 2 per stage depth down to a floor of order 2 - later
-    // stages don't need as much attenuation as the one right after the FIR (see
+    // stages don't need as much attenuation as the one right after the first stage (see
     // ButterworthHalfbandFilter's own header comment).
     int orderForStage(int stageIndex)
     {
@@ -14,7 +14,8 @@ namespace IADSP
     }
 
     template<typename Type>
-    Oversampler<Type>::Oversampler()
+    Oversampler<Type>::Oversampler(OversamplerMode modeToUse)
+        : mode(modeToUse)
     {
     }
 
@@ -53,8 +54,14 @@ namespace IADSP
             bufferBPointers[c] = bufferB[c].data();
         }
 
-        firUp.setNumChannels(numChannels);
-        firDown.setNumChannels(numChannels);
+        if(mode == OversamplerMode::HighQuality) {
+            firUp.setNumChannels(numChannels);
+            firDown.setNumChannels(numChannels);
+        }
+        else {
+            polyphaseUp.setNumChannels(numChannels);
+            polyphaseDown.setNumChannels(numChannels);
+        }
 
         for(auto& stage : iirUpStages) {
             stage.setNumChannels(numChannels);
@@ -70,8 +77,14 @@ namespace IADSP
     template<typename Type>
     void Oversampler<Type>::reset() noexcept
     {
-        firUp.reset();
-        firDown.reset();
+        if(mode == OversamplerMode::HighQuality) {
+            firUp.reset();
+            firDown.reset();
+        }
+        else {
+            polyphaseUp.reset();
+            polyphaseDown.reset();
+        }
 
         for(auto& stage : iirUpStages) {
             stage.reset();
@@ -102,7 +115,7 @@ namespace IADSP
     template<typename Type>
     size_t Oversampler<Type>::getLatency() const noexcept
     {
-        return numStages == 0 ? size_t{0} : size_t{66};
+        return (numStages == 0 || mode == OversamplerMode::LowLatency) ? size_t{0} : size_t{66};
     }
 
     template<typename Type>
@@ -121,9 +134,17 @@ namespace IADSP
         auto* currentBuffers = &bufferA;
         auto* otherBuffers = &bufferB;
 
-        for(int c = 0; c < numChannels; ++c) {
-            firUp.interpolate(std::span<const Type>(input[c], currentLength),
-                               std::span<Type>((*currentBuffers)[c]).first(currentLength * 2), c);
+        for(int c = 0; c < numChannels; ++c)
+        {
+            const auto source = std::span<const Type>(input[c], currentLength);
+            const auto destination = std::span<Type>((*currentBuffers)[c]).first(currentLength * 2);
+
+            if(mode == OversamplerMode::HighQuality) {
+                firUp.interpolate(source, destination, c);
+            }
+            else {
+                polyphaseUp.interpolate(source, destination, c);
+            }
         }
         currentLength *= 2;
 
@@ -206,9 +227,17 @@ namespace IADSP
             length = outputLength;
         }
 
-        for(int c = 0; c < numChannels; ++c) {
-            firDown.decimate(std::span<const Type>((*currentBuffers)[c]).first(numSamples * 2),
-                              std::span<Type>(output[c], numSamples), c);
+        for(int c = 0; c < numChannels; ++c)
+        {
+            const auto source = std::span<const Type>((*currentBuffers)[c]).first(numSamples * 2);
+            const auto destination = std::span<Type>(output[c], numSamples);
+
+            if(mode == OversamplerMode::HighQuality) {
+                firDown.decimate(source, destination, c);
+            }
+            else {
+                polyphaseDown.decimate(source, destination, c);
+            }
         }
     }
 

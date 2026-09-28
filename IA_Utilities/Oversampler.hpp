@@ -1,7 +1,13 @@
 /*
-This combines a HalfbandFIRFilter (for the first 2x stage) and a cascade of ButterworthHalfbandFilter
-instances (for any further 2x stages) into a multi-stage oversampler, intended as a JUCE-free
-replacement for juce::dsp::Oversampling.
+This combines a halfband filter for the first 2x stage and a cascade of ButterworthHalfbandFilter
+instances (for any further 2x stages) into a multi-stage oversampler.
+
+The first stage's filter is chosen once, in the constructor, via OversamplerMode:
+    HighQuality (default) - linear-phase HalfbandFIRFilter, 66 samples of latency.
+    LowLatency            - PolyphaseIIRHalfbandFilter (elliptic allpass IIR), no reported latency and much
+                            cheaper, with similar passband flatness and stopband rejection, but not
+                            linear-phase: roughly 4 original-rate samples of real (frequency-dependent)
+                            round-trip group delay at low frequencies.
 
 Usage per block (raw-pointer style):
     auto numUpsampled = oversampler.upsample(input, numSamples);
@@ -19,13 +25,6 @@ setNumStages() sets the number of 2x stages (oversampling factor = 2^numStages).
 filter state are all sized ahead of time in prepare() - none of the per-block methods above allocate.
 Calling setNumStages() after prepare() does not itself reallocate; prepare() must be called again before
 the next upsample()/downsample() call, or the (differently-sized) per-block buffers will be overrun.
-
-Only the FIR stage contributes to getLatency(), since the IIR stages don't have a constant group delay
-across frequency the way a linear-phase FIR does.
-
-This class is wrapped in namespace IADSP even though it lives in IA_Utilities, which otherwise leaves
-its classes un-namespaced - a deliberate exception, since it is built directly on top of the IA_Filters
-classes above.
 */
 
 #pragma once
@@ -34,16 +33,25 @@ classes above.
 #include <cstddef>
 #include "AudioBuffer.hpp"
 #include "../IA_Filters/HalfbandFIRFilter.hpp"
+#include "../IA_Filters/PolyphaseIIRHalfbandFilter.hpp"
 #include "../IA_Filters/ButterworthHalfbandFilter.hpp"
 #include <span>
 
 namespace IADSP
 {
+    enum struct OversamplerMode
+    {
+        HighQuality, // linear-phase FIR first stage
+        LowLatency   // polyphase allpass IIR first stage
+    };
+
     template<typename Type>
     class Oversampler
     {
     public:
-        Oversampler();
+        Oversampler(OversamplerMode modeToUse = OversamplerMode::HighQuality);
+
+        OversamplerMode getMode() const noexcept { return mode; }
 
         void reset() noexcept;
         void setNumStages(int newNumStages);
@@ -75,7 +83,7 @@ namespace IADSP
         // downsamples into an audio buffer
         void downsample(AudioBuffer<Type>& buffer) noexcept;
 
-        // latency is approx 1.375ms for a 48kHz original sample rate
+        // HighQuality: latency is approx 1.375ms for a 48kHz original sample rate; LowLatency: always 0
         size_t getLatency() const noexcept;
         int getOversamplingFactor() const noexcept { return 1 << numStages; }
         void snapToZero() noexcept;
@@ -86,7 +94,12 @@ namespace IADSP
         // ping-pong selection logic only lives in one place.
         Type** manipulatedBufferPointers() noexcept;
 
+        OversamplerMode mode;
+
+        // first stage - only the pair matching `mode` is ever prepared or used
         HalfbandFIRFilter<Type> firUp, firDown;
+        PolyphaseIIRHalfbandFilter<Type> polyphaseUp, polyphaseDown;
+
         std::vector<ButterworthHalfbandFilter<Type>> iirUpStages, iirDownStages;
 
         std::vector<std::vector<Type>> bufferA, bufferB;
