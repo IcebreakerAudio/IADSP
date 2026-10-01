@@ -57,12 +57,12 @@ namespace IADSP
 
         Type processSample(Type in, int channel = 0);
 
-        Type getLowpass1pole(int channel = 0)  { return saturateOutput(lp1[channel]); }
-        Type getLowpass2Pole(int channel = 0)  { return saturateOutput(lp2[channel]); }
-        Type getLowpass3Pole(int channel = 0)  { return saturateOutput(lp3[channel]); }
-        Type getLowpass4Pole(int channel = 0)  { return saturateOutput(lp4[channel]); }
-        Type getHighpass(int channel = 0)      { return saturateOutput(hp[channel]);  }
-        Type getBandpass(int channel = 0)      { return saturateOutput(bp[channel]);  }
+        Type getLowpass1pole(int channel = 0)  { return saturateOutput(lp1[static_cast<size_t>(channel)]); }
+        Type getLowpass2Pole(int channel = 0)  { return saturateOutput(lp2[static_cast<size_t>(channel)]); }
+        Type getLowpass3Pole(int channel = 0)  { return saturateOutput(lp3[static_cast<size_t>(channel)]); }
+        Type getLowpass4Pole(int channel = 0)  { return saturateOutput(lp4[static_cast<size_t>(channel)]); }
+        Type getHighpass(int channel = 0)      { return saturateOutput(hp[static_cast<size_t>(channel)]);  }
+        Type getBandpass(int channel = 0)      { return saturateOutput(bp[static_cast<size_t>(channel)]);  }
 
         void snapToZero();
 

@@ -38,9 +38,9 @@ namespace IADSP
         void setResonance(double newResonance);
         Type processSample(Type in, int channel = 0);
 
-        Type getLowpass(int channel = 0)  { return lp[channel]; }
-        Type getHighpass(int channel = 0) { return hp[channel]; }
-        Type getBandpass(int channel = 0) { return bp[channel]; }
+        Type getLowpass(int channel = 0)  { return lp[static_cast<size_t>(channel)]; }
+        Type getHighpass(int channel = 0) { return hp[static_cast<size_t>(channel)]; }
+        Type getBandpass(int channel = 0) { return bp[static_cast<size_t>(channel)]; }
 
         Type getMagnitudeDb(Type frequencyHz) const noexcept;
 
@@ -52,7 +52,7 @@ namespace IADSP
         void updateCoefficients();
 
         double sampleRate = 48000.0, invSampleRate = 1.0 / 48000.0, cutoff = 500.0, maxFrequency = 23520.0, resonance = 0.0;
-        Type a0 = 0.0, p = 0.0, a = 0.0, d = 0.0;
+        Type a0 = static_cast<Type>(0.0), p = static_cast<Type>(0.0), a = static_cast<Type>(0.0), d = static_cast<Type>(0.0);
         std::vector<Type> fbk1 { 1 }, fbk2 { 1 }, lp { 1 }, hp { 1 }, bp { 1 };
         SecondOrderFilterMode filterType = SecondOrderFilterMode::Lowpass;
     };

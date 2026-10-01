@@ -18,7 +18,7 @@ namespace IADSP
     template <typename T>
     T sgn(T val)
     {
-        return (T(0) < val) - (val < T(0));
+        return static_cast<T>((T(0) < val) - (val < T(0)));
     }
 
     template <typename Type>
@@ -42,8 +42,8 @@ namespace IADSP
         void setNumChannels(int numChannels)
         {
             channels = numChannels;
-            z1.resize(channels);
-            f1.resize(channels);
+            z1.resize(static_cast<size_t>(channels));
+            f1.resize(static_cast<size_t>(channels));
 
             reset();
         }
@@ -55,12 +55,14 @@ namespace IADSP
                 return ZERO;
             }
 
+            const auto ch = static_cast<size_t>(channel);
+
             x = sample;
-            z = z1[channel];
-            f = f1[channel];
+            z = z1[ch];
+            f = f1[ch];
             dx = x - z;
-            y = abs(x) <= ONE ? x * x / static_cast<Type>(2.0) : x * sgn(x) - static_cast<Type>(0.5);
-            if (abs(dx) > THRESHOLD) {
+            y = std::abs(x) <= ONE ? x * x / static_cast<Type>(2.0) : x * sgn(x) - static_cast<Type>(0.5);
+            if (std::abs(dx) > THRESHOLD) {
                 x = y - f;
                 x /= dx;
             }
@@ -68,8 +70,8 @@ namespace IADSP
                 x += z;
                 x = std::clamp(x * static_cast<Type>(0.5), -ONE, ONE);
             }
-            f1[channel] = y;
-            z1[channel] = sample;
+            f1[ch] = y;
+            z1[ch] = sample;
 
             return x;
         }
@@ -108,8 +110,8 @@ namespace IADSP
         void setNumChannels(int numChannels)
         {
             channels = numChannels;
-            z1.resize(channels);
-            f1.resize(channels);
+            z1.resize(static_cast<size_t>(channels));
+            f1.resize(static_cast<size_t>(channels));
 
             reset();
         }
@@ -121,23 +123,25 @@ namespace IADSP
                 return ZERO;
             }
 
+            const auto ch = static_cast<size_t>(channel);
+
             x = sample;
-            z = z1[channel];
-            f = f1[channel];
+            z = z1[ch];
+            f = f1[ch];
 
             dx = x - z;
-            y = abs(x);
+            y = std::abs(x);
             y = y < Y_THRESHOLD ? std::log(std::cosh(y)) : y - static_cast<Type>(0.693147);
 
-            if (abs(dx) > THRESHOLD) {
+            if (std::abs(dx) > THRESHOLD) {
                 x = (y - f) / dx;
             }
             else {
                 x = std::tanh((x + z) * static_cast<Type>(0.5));
             }
 
-            f1[channel] = y;
-            z1[channel] = sample;
+            f1[ch] = y;
+            z1[ch] = sample;
 
             return x;
         }

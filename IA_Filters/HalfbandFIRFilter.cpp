@@ -45,14 +45,14 @@ namespace IADSP
     void HalfbandFIRFilter<Type>::HistoryBuffer::push(Type sample)
     {
         writePos = (writePos + 1 == length) ? 0 : writePos + 1;
-        buffer[writePos] = sample;
-        buffer[writePos + length] = sample;
+        buffer[static_cast<size_t>(writePos)] = sample;
+        buffer[static_cast<size_t>(writePos + length)] = sample;
     }
 
     template<typename Type>
     Type HalfbandFIRFilter<Type>::HistoryBuffer::read(int lookback) const
     {
-        return buffer[writePos + length - lookback];
+        return buffer[static_cast<size_t>(writePos + length - lookback)];
     }
 
     //===== FIR Filter =====
@@ -76,14 +76,15 @@ namespace IADSP
                 hIdeal = 0.0;
             }
             else {
-                hIdeal = std::sin(std::numbers::pi * k / 2.0) / (std::numbers::pi * k);
+                const auto kd = static_cast<double>(k);
+                hIdeal = std::sin(std::numbers::pi * kd / 2.0) / (std::numbers::pi * kd);
             }
 
-            const double x = (2.0 * n) / (numTaps - 1) - 1.0;
+            const double x = (2.0 * static_cast<double>(n)) / static_cast<double>(numTaps - 1) - 1.0;
             const double window = besselI0(beta * std::sqrt(std::max(0.0, 1.0 - x * x))) / i0Beta;
 
             if(n % 2 == 1) {
-                oddTaps[(n - 1) / 2] = hIdeal * window;
+                oddTaps[static_cast<size_t>((n - 1) / 2)] = hIdeal * window;
             }
         }
     }
@@ -91,8 +92,8 @@ namespace IADSP
     template<typename Type>
     void HalfbandFIRFilter<Type>::setNumChannels(int numChannels)
     {
-        upHistory.resize(numChannels);
-        downHistory.resize(numChannels);
+        upHistory.resize(static_cast<size_t>(numChannels));
+        downHistory.resize(static_cast<size_t>(numChannels));
 
         for(auto& h : upHistory) {
             h.setLength(upHistoryLength);
@@ -118,7 +119,7 @@ namespace IADSP
     template<typename Type>
     void HalfbandFIRFilter<Type>::interpolate(std::span<const Type> input, std::span<Type> output, int channel) noexcept
     {
-        auto& history = upHistory[channel];
+        auto& history = upHistory[static_cast<size_t>(channel)];
 
         for(size_t i = 0; i < input.size(); ++i)
         {
@@ -128,7 +129,7 @@ namespace IADSP
 
             double acc = 0.0;
             for(int j = 0; j < numOddTaps; ++j) {
-                acc += oddTaps[j] * static_cast<double>(history.read(j));
+                acc += oddTaps[static_cast<size_t>(j)] * static_cast<double>(history.read(j));
             }
             output[2 * i + 1] = static_cast<Type>(2.0 * acc);
         }
@@ -143,7 +144,7 @@ namespace IADSP
     template<typename Type>
     void HalfbandFIRFilter<Type>::decimate(std::span<const Type> input, std::span<Type> output, int channel) noexcept
     {
-        auto& history = downHistory[channel];
+        auto& history = downHistory[static_cast<size_t>(channel)];
 
         for(size_t i = 0; i < output.size(); ++i)
         {
@@ -152,7 +153,7 @@ namespace IADSP
 
             double acc = 0.5 * static_cast<double>(history.read(67));
             for(int j = 0; j < numOddTaps; ++j) {
-                acc += oddTaps[j] * static_cast<double>(history.read(2 + 2 * j));
+                acc += oddTaps[static_cast<size_t>(j)] * static_cast<double>(history.read(2 + 2 * j));
             }
             output[i] = static_cast<Type>(acc);
         }

@@ -20,9 +20,10 @@ namespace IADSP
     template<typename Type>
     void CrossoverFilter<Type>::setNumChannels(int numChannels)
     {
-        s1.resize(numChannels);
-        s2.resize(numChannels);
-        s3.resize(numChannels);
+        const auto size = static_cast<size_t>(numChannels);
+        s1.resize(size);
+        s2.resize(size);
+        s3.resize(size);
         reset();
     }
 
@@ -49,9 +50,11 @@ namespace IADSP
     template<typename Type>
     Type CrossoverFilter<Type>::processSingle(Type in, std::vector<Type>& fbk, int channel)
     {
-        auto y = (in - fbk[channel]) * g;
-        auto x = fbk[channel] + y;
-        fbk[channel] = x + y;
+        const auto ch = static_cast<size_t>(channel);
+
+        auto y = (in - fbk[ch]) * g;
+        auto x = fbk[ch] + y;
+        fbk[ch] = x + y;
 
         return x;
     }

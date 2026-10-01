@@ -25,17 +25,18 @@ namespace IADSP
 
         std::fill(hp.begin(), hp.end(), zero);
         std::fill(bp.begin(), bp.end(), zero);
-        std::fill(hp.begin(), hp.end(), zero);
+        std::fill(lp.begin(), lp.end(), zero);
     }
         
     template<typename Type>
     void SecondOrderFilter<Type>::setNumChannels(int numChannels)
     {
-        fbk1.resize(numChannels);
-        fbk2.resize(numChannels);
-        hp.resize(numChannels);
-        bp.resize(numChannels);
-        lp.resize(numChannels);
+        const auto size = static_cast<size_t>(numChannels);
+        fbk1.resize(size);
+        fbk2.resize(size);
+        hp.resize(size);
+        bp.resize(size);
+        lp.resize(size);
 
         reset();
     }
@@ -97,25 +98,27 @@ namespace IADSP
             updateFlag = false;
         }
 
-        hp[channel] = a0 * (in - (d * fbk1[channel]) - fbk2[channel]);
-        bp[channel] = (a * hp[channel]) + fbk1[channel];
-        lp[channel] = (a * bp[channel]) + fbk2[channel];
+        const auto ch = static_cast<size_t>(channel);
 
-        fbk1[channel] = (a * hp[channel]) + bp[channel];
-        fbk2[channel] = (a * bp[channel]) + lp[channel];
+        hp[ch] = a0 * (in - (d * fbk1[ch]) - fbk2[ch]);
+        bp[ch] = (a * hp[ch]) + fbk1[ch];
+        lp[ch] = (a * bp[ch]) + fbk2[ch];
+
+        fbk1[ch] = (a * hp[ch]) + bp[ch];
+        fbk2[ch] = (a * bp[ch]) + lp[ch];
 
         switch (filterType)
         {
         case SecondOrderFilterMode::Highpass:
-            return hp[channel];
+            return hp[ch];
             break;
 
         case SecondOrderFilterMode::Bandpass:
-            return bp[channel];
+            return bp[ch];
             break;
-        
+
         default:
-            return lp[channel];
+            return lp[ch];
             break;
         }
     }

@@ -188,7 +188,7 @@ namespace IADSP
     template<typename Type>
     AudioBuffer<Type> Oversampler<Type>::getInternalBuffer() noexcept
     {
-        return AudioBuffer<Type>(manipulatedBufferPointers(), numChannels, currentLength);
+        return AudioBuffer<Type>(manipulatedBufferPointers(), static_cast<uint32_t>(numChannels), static_cast<uint32_t>(currentLength));
     }
 
     template<typename Type>

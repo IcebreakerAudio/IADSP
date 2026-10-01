@@ -27,7 +27,7 @@ namespace IADSP
     template<typename Type>
     void FirstOrderFilter<Type>::setNumChannels(int numChannels)
     {
-        fbk.resize(numChannels);
+        fbk.resize(static_cast<size_t>(numChannels));
         reset();
     }
 
@@ -54,9 +54,11 @@ namespace IADSP
     template<typename Type>
     Type FirstOrderFilter<Type>::processSample(Type in, int channel)
     {
-        auto y = (in - fbk[channel]) * g;
-        auto x = fbk[channel] + y;
-        fbk[channel] = x + y;
+        const auto ch = static_cast<size_t>(channel);
+
+        auto y = (in - fbk[ch]) * g;
+        auto x = fbk[ch] + y;
+        fbk[ch] = x + y;
 
         if(filterType == FirstOrderFilterMode::Lowpass) {
             return x;
@@ -72,9 +74,11 @@ namespace IADSP
     template<typename Type>
     void FirstOrderFilter<Type>::processCrossover(Type in, Type& lowpassOutput, Type& highpassOutput, int channel)
     {
-        auto y = (in - fbk[channel]) * g;
-        auto x = fbk[channel] + y;
-        fbk[channel] = x + y;
+        const auto ch = static_cast<size_t>(channel);
+
+        auto y = (in - fbk[ch]) * g;
+        auto x = fbk[ch] + y;
+        fbk[ch] = x + y;
 
         lowpassOutput = x;
         highpassOutput = in - x;
@@ -112,8 +116,8 @@ namespace IADSP
     template<typename Type>
     void FirstOrderFilter<Type>::updateCoefficients()
     {
-        auto w = std::tan(cutoff * invSampleRate * std::numbers::pi_v<Type>);
-        g = w / (w + 1.0);
+        auto w = std::tan(cutoff * static_cast<double>(invSampleRate) * std::numbers::pi);
+        g = static_cast<Type>(w / (w + 1.0));
     }
 
     template<typename Type>

@@ -38,7 +38,7 @@ namespace IADSP
         Type processSingle(Type in, std::vector<Type>& fbk, int channel = 0);
 
         double sampleRate = 48000.0, cutoff = 500.0, maxFrequency = 20000.0;
-        Type g = 0.0, invSampleRate = 1.0 / 48000.0;
+        Type g = static_cast<Type>(0.0), invSampleRate = static_cast<Type>(1.0 / 48000.0);
         std::vector<Type> s1 { 1 },  s2 { 1 },  s3 { 1 };
     };
 }

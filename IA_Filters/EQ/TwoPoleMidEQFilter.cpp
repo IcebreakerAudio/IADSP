@@ -7,7 +7,7 @@ namespace IADSP
     void TwoPoleMidEQFilter<Type>::setSampleRate(double newSampleRate)
     {
         sampleRate = static_cast<Type>(newSampleRate);
-        iFs = 1.0 / sampleRate;
+        iFs = static_cast<Type>(1.0) / sampleRate;
 
         prepared = true;
 
@@ -18,10 +18,11 @@ namespace IADSP
     template<typename Type>
     void TwoPoleMidEQFilter<Type>::setNumChannels(int channelsToUse)
     {
-        y1.resize(channelsToUse);
-        y2.resize(channelsToUse);
-        z1.resize(channelsToUse);
-        z2.resize(channelsToUse);
+        const auto size = static_cast<size_t>(channelsToUse);
+        y1.resize(size);
+        y2.resize(size);
+        z1.resize(size);
+        z2.resize(size);
 
         reset();
     }
@@ -55,11 +56,14 @@ namespace IADSP
     {
         bandWidth = newBandWidth;
 
-        if(bandWidth < 0.1) {
-            bandWidth = 0.1;
+        const auto minBandWidth = static_cast<Type>(0.1);
+        const auto maxBandWidth = static_cast<Type>(10.0);
+
+        if(bandWidth < minBandWidth) {
+            bandWidth = minBandWidth;
         }
-        else if(bandWidth > 10.0) {
-            bandWidth = 10.0;
+        else if(bandWidth > maxBandWidth) {
+            bandWidth = maxBandWidth;
         }
 
         update();
@@ -72,19 +76,21 @@ namespace IADSP
             return input;
         }
 
-        auto x = input;
-        auto y = y2[channel];
+        const auto ch = static_cast<size_t>(channel);
 
-        y2[channel] = y1[channel];
-        y1[channel] = input;
+        auto x = input;
+        auto y = y2[ch];
+
+        y2[ch] = y1[ch];
+        y1[ch] = input;
 
         x = (x - y) * w;
-        auto j = z1[channel] * a1;
-        auto k = z2[channel] * a2;
+        auto j = z1[ch] * a1;
+        auto k = z2[ch] * a2;
 
         x = (x - j - k) * invA0;
-        z2[channel] = z1[channel];
-        z1[channel] = x;
+        z2[ch] = z1[ch];
+        z1[ch] = x;
 
         x *= boost;
 
@@ -118,26 +124,30 @@ namespace IADSP
             return;
         }
         
-        auto bw = pow(std::numbers::sqrt2_v<Type>, bandWidth);
-        auto b = pow(base, decibelChange);
+        const auto one = static_cast<Type>(1.0);
+        const auto minQ = static_cast<Type>(0.01);
+        const auto maxQ = static_cast<Type>(100.0);
 
-        q = ((bw * bw) - 1.0) / (bw * b);
-        if(q < 0.01) {
-            q = 0.01;
+        auto bw = std::pow(std::numbers::sqrt2_v<Type>, bandWidth);
+        auto b = std::pow(base, decibelChange);
+
+        q = ((bw * bw) - one) / (bw * b);
+        if(q < minQ) {
+            q = minQ;
         }
-        else if (q > 100.0) {
-            q = 100.0;
+        else if (q > maxQ) {
+            q = maxQ;
         }
 
-        boost = ((b * b) - 1.0) * q;
+        boost = ((b * b) - one) * q;
 
         w = std::tan(std::numbers::pi_v<Type> * frequency * iFs);
         w2 = w * w;
         wQ = w * q;
 
-        invA0 = 1.0 / (w2 + 1.0 + wQ);
-        a1 = (w2 - 1.0) * 2.0;
-        a2 = w2 + 1.0 - wQ;
+        invA0 = one / (w2 + one + wQ);
+        a1 = (w2 - one) * static_cast<Type>(2.0);
+        a2 = w2 + one - wQ;
     }
 
     template<typename Type>

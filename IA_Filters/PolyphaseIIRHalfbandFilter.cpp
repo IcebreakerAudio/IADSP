@@ -73,8 +73,8 @@ namespace IADSP
     {
         for(int s = 0; s < sectionsPerPath; ++s)
         {
-            auto& section = state[s];
-            const auto c = coefficients[2 * s + path];
+            auto& section = state[static_cast<size_t>(s)];
+            const auto c = coefficients[static_cast<size_t>(2 * s + path)];
 
             // (c + z^-1) / (1 + c * z^-1) at the low rate == (c + z^-2) / (1 + c * z^-2) at the high rate
             const auto output = c * (input - section.y1) + section.x1;
@@ -89,8 +89,8 @@ namespace IADSP
     template<typename Type>
     void PolyphaseIIRHalfbandFilter<Type>::interpolate(std::span<const Type> input, std::span<Type> output, int channel) noexcept
     {
-        auto& state0 = path0State[channel];
-        auto& state1 = path1State[channel];
+        auto& state0 = path0State[static_cast<size_t>(channel)];
+        auto& state1 = path1State[static_cast<size_t>(channel)];
 
         for(size_t i = 0; i < input.size(); ++i)
         {
@@ -109,8 +109,8 @@ namespace IADSP
     void PolyphaseIIRHalfbandFilter<Type>::decimate(std::span<const Type> input, std::span<Type> output, int channel) noexcept
     {
         const auto half = static_cast<Type>(0.5);
-        auto& state0 = path0State[channel];
-        auto& state1 = path1State[channel];
+        auto& state0 = path0State[static_cast<size_t>(channel)];
+        auto& state1 = path1State[static_cast<size_t>(channel)];
 
         for(size_t i = 0; i < output.size(); ++i)
         {

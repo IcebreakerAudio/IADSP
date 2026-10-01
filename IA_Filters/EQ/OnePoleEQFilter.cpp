@@ -25,7 +25,7 @@ namespace IADSP
     template<typename Type>
     void OnePoleEQFilter<Type>::setNumChannels(int channelsToUse)
     {
-        y1.resize(channelsToUse);
+        y1.resize(static_cast<size_t>(channelsToUse));
 
         reset();
     }
@@ -63,10 +63,12 @@ namespace IADSP
             return input;
         }
         
-        auto y = y1[channel];
+        const auto ch = static_cast<size_t>(channel);
+
+        auto y = y1[ch];
         auto x = (input - (y * a1)) * invA0;
 
-        y1[channel] = x;
+        y1[ch] = x;
 
         if(mode == OnePoleEQFilterMode::LowPass)
         {

@@ -50,7 +50,7 @@ namespace IADSP
         void updateCoefficients();
 
         double sampleRate = 48000.0, cutoff = 500.0, maxFrequency = 24000.0;
-        Type g = 0.0, invSampleRate = 1.0 / 48000.0;
+        Type g = static_cast<Type>(0.0), invSampleRate = static_cast<Type>(1.0 / 48000.0);
         std::vector<Type> fbk { 1 };
         FirstOrderFilterMode filterType = FirstOrderFilterMode::Lowpass;
     };

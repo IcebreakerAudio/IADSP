@@ -25,15 +25,15 @@ namespace IADSP
 
         order = newOrder;
         const auto numSections = order / 2;
-        sections.resize(numSections);
+        sections.resize(static_cast<size_t>(numSections));
 
         for(int k = 1; k <= numSections; ++k)
         {
-            const auto theta = std::numbers::pi * (2 * k - 1) / (2.0 * order);
+            const auto theta = std::numbers::pi * static_cast<double>(2 * k - 1) / (2.0 * static_cast<double>(order));
             const auto q = 1.0 / (2.0 * std::cos(theta));
             const auto resonance = 1.0 - 1.0 / (2.0 * q);
 
-            auto& section = sections[k - 1];
+            auto& section = sections[static_cast<size_t>(k - 1)];
             section.setMode(SecondOrderFilterMode::Lowpass);
             section.setSampleRate(2.0);
             section.setCutoffFrequency(0.25);

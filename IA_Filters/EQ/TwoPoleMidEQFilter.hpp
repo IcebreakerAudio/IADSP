@@ -45,11 +45,12 @@ namespace IADSP
         void update();
 
         bool prepared = false;
-        Type sampleRate = 1.0, iFs = 1.0;
+        Type sampleRate = static_cast<Type>(1.0), iFs = static_cast<Type>(1.0);
 
-        Type frequency = 500.0, decibelChange = 0.0, bandWidth = 3.0;
-        Type q = 0.0, boost = 0.0, w = 0.0, w2 = 0.0, wQ = 0.0;
-        Type invA0 = 0.0, a1 = 0.0, a2 = 0.0;
+        Type frequency = static_cast<Type>(500.0), decibelChange = static_cast<Type>(0.0), bandWidth = static_cast<Type>(3.0);
+        Type q = static_cast<Type>(0.0), boost = static_cast<Type>(0.0), w = static_cast<Type>(0.0),
+             w2 = static_cast<Type>(0.0), wQ = static_cast<Type>(0.0);
+        Type invA0 = static_cast<Type>(0.0), a1 = static_cast<Type>(0.0), a2 = static_cast<Type>(0.0);
 
         const Type base = static_cast<Type>(std::pow(10.0, 1.0 / 40.0));
 
