@@ -15,6 +15,7 @@ namespace IADSP
     {
         sampleRate = static_cast<Type>(newSampleRate);
         iFs = static_cast<Type>(1.0) / sampleRate;
+        maxFrequency = sampleRate * static_cast<Type>(0.49);
 
         prepared = true;
 
@@ -45,7 +46,7 @@ namespace IADSP
     template<typename Type>
     void OnePoleEQFilter<Type>::setFrequency(Type newFreq)
     {
-        frequency = newFreq;
+        frequency = std::min(newFreq, maxFrequency);
         update();
     }
 

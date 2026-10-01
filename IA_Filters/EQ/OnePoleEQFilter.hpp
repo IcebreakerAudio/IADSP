@@ -14,6 +14,7 @@ Example:
 
 #pragma once
 
+#include <algorithm>
 #include <cmath>
 #include <complex>
 #include <numbers>
@@ -54,6 +55,7 @@ namespace IADSP
 
         bool prepared = false;
         Type sampleRate = static_cast<Type>(1.0), iFs = static_cast<Type>(1.0);
+        Type maxFrequency = sampleRate * static_cast<Type>(0.49);
 
         Type frequency = static_cast<Type>(500.0), decibelChange = static_cast<Type>(0.0);
         Type boost = static_cast<Type>(0.0), w = static_cast<Type>(0.0);
