@@ -29,16 +29,23 @@ namespace IADSP
 
         void setValue(Type newValue, bool force = false)
         {
-            targetValue = newValue;
             if(force || glideTimeSamples <= static_cast<Type>(1.0))
             {
+                targetValue = newValue;
                 value = newValue;
                 smoothing = false;
+                return;
             }
-            else
-            {
-                incAmount = (targetValue - value) / glideTimeSamples;
-                smoothing = !checkFinished();
+
+            if(newValue == targetValue) {
+                return;
+            }
+
+            targetValue = newValue;
+            incAmount = (targetValue - value) / glideTimeSamples;
+            smoothing = !checkFinished();
+            if(!smoothing) {
+                value = targetValue;
             }
         }
 
@@ -49,7 +56,11 @@ namespace IADSP
             }
 
             value += incAmount;
-            smoothing = !checkFinished();
+            if(checkFinished())
+            {
+                value = targetValue;
+                smoothing = false;
+            }
 
             return value;
         }
@@ -70,8 +81,12 @@ namespace IADSP
 
         bool checkFinished()
         {
-            const auto diff = std::abs(value - targetValue);
-            return diff < std::abs(incAmount);
+            // Finished once within half a step of the target, or at/past it. A zero increment (nothing to
+            // ramp, or a step too small to represent) also counts, rather than running forever.
+            const auto remaining = targetValue - value;
+            return incAmount == static_cast<Type>(0.0)
+                || remaining * incAmount <= static_cast<Type>(0.0)
+                || std::abs(remaining) < std::abs(incAmount) * static_cast<Type>(0.5);
         }
 
         Type sampleRate = 48000.0, value = 0.0, glideTime = 0.0, targetValue = 0.0, incAmount = 0.0, glideTimeSamples = 1.0;
