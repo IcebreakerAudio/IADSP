@@ -41,7 +41,7 @@ namespace IADSP
     template<typename Type>
     void TwoPoleMidEQFilter<Type>::setFrequency(Type newFreq)
     {
-        frequency = std::min(newFreq, maxFrequency);
+        frequency = newFreq;
         update();
     }
 
@@ -142,7 +142,7 @@ namespace IADSP
 
         boost = ((b * b) - one) * q;
 
-        w = std::tan(std::numbers::pi_v<Type> * frequency * iFs);
+        w = std::tan(std::numbers::pi_v<Type> * std::min(frequency, maxFrequency) * iFs);
         w2 = w * w;
         wQ = w * q;
 

@@ -46,7 +46,7 @@ namespace IADSP
     template<typename Type>
     void OnePoleEQFilter<Type>::setFrequency(Type newFreq)
     {
-        frequency = std::min(newFreq, maxFrequency);
+        frequency = newFreq;
         update();
     }
 
@@ -121,7 +121,7 @@ namespace IADSP
         
         const auto one = static_cast<Type>(1.0);
         const auto x = std::pow(base, decibelChange);
-        const auto nominalOmega = std::tan(frequency * std::numbers::pi_v<Type> * iFs);
+        const auto nominalOmega = std::tan(std::min(frequency, maxFrequency) * std::numbers::pi_v<Type> * iFs);
 
         if(mode == OnePoleEQFilterMode::LowPass) {
             w = nominalOmega / x;
