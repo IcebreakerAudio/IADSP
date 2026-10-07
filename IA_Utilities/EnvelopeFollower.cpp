@@ -37,6 +37,7 @@ namespace IADSP
     void EnvelopeFollower<Type>::setAttackTime(Type attackTimeMs)
     {
         attackTime = attackTimeMs;
+        attackIsReal = false;
         attackCoefficient = calculateLimitedCoefficient(attackTime);
     }
 
@@ -44,7 +45,24 @@ namespace IADSP
     void EnvelopeFollower<Type>::setReleaseTime(Type releaseTimeMs)
     {
         releaseTime = releaseTimeMs;
+        releaseIsReal = false;
         releaseCoefficient = calculateLimitedCoefficient(releaseTime);
+    }
+
+    template<typename Type>
+    void EnvelopeFollower<Type>::setAttackReal(Type attackTimeMs)
+    {
+        attackTime = attackTimeMs;
+        attackIsReal = true;
+        attackCoefficient = calculateRealCoefficient(attackTime);
+    }
+
+    template<typename Type>
+    void EnvelopeFollower<Type>::setReleaseReal(Type releaseTimeMs)
+    {
+        releaseTime = releaseTimeMs;
+        releaseIsReal = true;
+        releaseCoefficient = calculateRealCoefficient(releaseTime);
     }
 
     template<typename Type>
@@ -99,8 +117,8 @@ namespace IADSP
     template<typename Type>
     void EnvelopeFollower<Type>::updateCoefficients()
     {
-        attackCoefficient = calculateLimitedCoefficient(attackTime);
-        releaseCoefficient = calculateLimitedCoefficient(releaseTime);
+        attackCoefficient = attackIsReal ? calculateRealCoefficient(attackTime) : calculateLimitedCoefficient(attackTime);
+        releaseCoefficient = releaseIsReal ? calculateRealCoefficient(releaseTime) : calculateLimitedCoefficient(releaseTime);
     }
 
     template<typename Type>
@@ -111,6 +129,16 @@ namespace IADSP
         }
 
         return static_cast<Type>(std::exp(expFactor / static_cast<double>(timeMs)));
+    }
+
+    template<typename Type>
+    Type EnvelopeFollower<Type>::calculateRealCoefficient(Type timeMs) const
+    {
+        if(timeMs < static_cast<Type>(1.0e-3)) {
+            return static_cast<Type>(0.0);
+        }
+
+        return static_cast<Type>(std::exp(-1000.0 / (sampleRate * static_cast<double>(timeMs))));
     }
 
     //==============================================================================
